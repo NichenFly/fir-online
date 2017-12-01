@@ -84,6 +84,9 @@ $CHESS_WIDTH: 30px;
     width: 600px;
     height: 600px;
     position: relative;
+    &:hover {
+        cursor: pointer;
+    }
 }
 .chess-lines {
     width: $WIDTH;
@@ -118,8 +121,6 @@ $CHESS_WIDTH: 30px;
         width: $CHESS_WIDTH;
         height: $CHESS_WIDTH;
         border-radius: 50%;
-        // border-width: 2px;
-        // border-color: yellow;
         z-index: 100;
     }
     .black-chess {
@@ -130,7 +131,7 @@ $CHESS_WIDTH: 30px;
     .white-chess {
         position: absolute;
         background-color: #F7FBBA;
-        box-shadow: 4px -1px 20px 7px #fff inset, 1px 2px 5px #000;
+        box-shadow: 4px -1px 20px 7px #ddd inset, 1px 2px 5px #000;
     }
 }
 
