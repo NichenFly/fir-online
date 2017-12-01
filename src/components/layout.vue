@@ -115,21 +115,22 @@ $CHESS_WIDTH: 30px;
     top: 0;
     left: 0;
     .chess {
-        background-color: yellow;
         width: $CHESS_WIDTH;
         height: $CHESS_WIDTH;
         border-radius: 50%;
-        border-width: 2px;
-        border-color: yellow;
+        // border-width: 2px;
+        // border-color: yellow;
         z-index: 100;
     }
     .black-chess {
         position: absolute;
-        box-shadow: 5px -2px 23px 20px #000 inset, 1px 2px 5px #000;
+        background-color: #aaa;
+        box-shadow: 4px -2px 20px 7px #000 inset, 1px 2px 5px #000;
     }
     .white-chess {
         position: absolute;
-        box-shadow: 1px 2px 35px 8px #fff inset, 1px 2px 5px #000;
+        background-color: #F7FBBA;
+        box-shadow: 4px -1px 20px 7px #fff inset, 1px 2px 5px #000;
     }
 }
 
