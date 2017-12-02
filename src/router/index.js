@@ -1,12 +1,18 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import { Menu, Dropdown, Icon } from 'iview'
+import { Menu, Dropdown, Icon, Card, Tooltip } from 'iview'
+import { Row, Col } from 'iview/src/components/grid'
 
 Vue.component('Menu', Menu)
+Vue.component('MenuItem', Menu.Item)
 Vue.component('Dropdown', Dropdown)
-Vue.component('Icon', Icon)
 Vue.component('DropdownMenu', Dropdown.Menu)
 Vue.component('DropdownItem', Dropdown.Item)
+Vue.component('Icon', Icon)
+Vue.component('Card', Card)
+Vue.component('Row', Row)
+Vue.component('Col', Col)
+Vue.component('Tooltip', Tooltip)
 
 Vue.use(Router)
 

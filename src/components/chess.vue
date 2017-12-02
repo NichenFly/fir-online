@@ -38,16 +38,16 @@
                 </div>
             </div>
             <div class="chess-keys">
-                <div class="chess black-chess" style="top: 45px; left: 5px;"></div>
-                <div class="chess black-chess" style="top: 85px; left: 5px;"></div>
-                <div class="chess black-chess" style="top: 125px; left: 5px;"></div>
-                <div class="chess black-chess" style="top: 165px; left: 5px;"></div>
-                <div class="chess black-chess" style="top: 205px; left: 5px;"></div>
+                <div class="chess black-chess just" style="top: 45px; left: 5px;"></div>
+                <div class="chess black-chess just" style="top: 85px; left: 5px;"></div>
+                <div class="chess black-chess just" style="top: 125px; left: 5px;"></div>
+                <div class="chess black-chess just" style="top: 165px; left: 5px;"></div>
+                <div class="chess black-chess just" style="top: 205px; left: 5px;"></div>
                 <div class="chess white-chess" style="top: 5px; left: 5px"></div>
                 <div class="chess white-chess" style="top: 45px; left: 45px"></div>
                 <div class="chess white-chess" style="top: 85px; left: 85px"></div>
                 <div class="chess white-chess" style="top: 125px; left: 125px"></div>
-                <div class="chess white-chess" style="top: 165px; left: 165px"></div>
+                <div class="chess white-chess" style="top: 125px; left: 165px"></div>
             </div>
         </div>
     </div>
@@ -71,8 +71,10 @@ $WIDTH: 560px;
 $HEIGHT: 560px;
 $BACKGROUND_COLOR: #ede5c1;
 $BACKGROUND_IMG: url(../assets/imgs/bg-img.png);
+$BACKGROUND_FIRE_IMG: url(../assets/imgs/fire.gif);
 $CHESS_WIDTH: 30px;
 .chess-area {
+    display: inline-flex;
     background-image: $BACKGROUND_IMG;
     background-repeat: repeat;
     padding: 20px;
@@ -127,6 +129,16 @@ $CHESS_WIDTH: 30px;
         position: absolute;
         background-color: #F7FBBA;
         box-shadow: 4px -1px 20px 7px #ddd inset, 1px 2px 5px #000;
+    }
+    .just::before {
+        content: "";
+        width: 60px;
+        height: 60px;
+        background-image: $BACKGROUND_FIRE_IMG;
+        background-size: 60px 60px;
+        position: absolute;
+        top: -15px;
+        left: -15px;
     }
 }
 

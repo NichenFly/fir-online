@@ -2,10 +2,17 @@
     <div>
         <div class="layout">
             <Menu mode="horizontal" theme="dark" active-name="1">
-                <div class="layout-logo">
+                <!-- <div class="layout-logo">
                     <router-link to="/">FIR</router-link>
-                </div>
+                </div> -->
                 <div class="layout-nav">
+                    <MenuItem name="1">
+                        <!-- <Icon type="ios-navigate"></Icon> -->
+                        <router-link to="/">
+                            <img src="src/assets/fir.png" height="60">
+                        </router-link>
+                    </MenuItem>
+                    <div class="info">Kitty 正在与 大王对战</div>
                     <Dropdown>
                         <span href="javascript:void(0)">
                             Kitty
@@ -31,33 +38,26 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-    .layout{
-        // border: 1px solid #d7dde4;
-        background: #f5f7f9;
+    .ivu-menu-item {
+        position: absolute;
+        padding: 0;
+        height: 60px;
+        line-height: 60px;
     }
-    .layout-logo{
-        width: 100px;
-        height: 30px;
-        // background: #5b6270;
+    .info {
         color: #fff;
-        border-radius: 3px;
-        float: left;
-        // position: relative;
-        top: 15px;
-        left: 20px;
+        font-weight: 600;
     }
-    .layout-nav{
+    .layout-nav > .ivu-dropdown{
         width: 100px;
         float: right;
+        position: absolute;
+        right: 0;
+        top: 0;
         color: #fff;
         &:hover{
             cursor: pointer;
         }
-    }
-    .layout-assistant{
-        width: 300px;
-        margin: 0 auto;
-        height: inherit;
     }
     .layout-content{
         min-height: 200px;
