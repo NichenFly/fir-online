@@ -1,138 +1,72 @@
 <template>
     <div>
-        <div class="chess-area">
-            <div class="chess-lines">
-                <div class="line-horizontal">
-                    <div class="line" style="top: 0px;"></div>
-                    <div class="line" style="top: 40px;"></div>
-                    <div class="line" style="top: 80px;"></div>
-                    <div class="line" style="top: 120px;"></div>
-                    <div class="line" style="top: 160px;"></div>
-                    <div class="line" style="top: 200px;"></div>
-                    <div class="line" style="top: 240px;"></div>
-                    <div class="line" style="top: 280px;"></div>
-                    <div class="line" style="top: 320px;"></div>
-                    <div class="line" style="top: 360px;"></div>
-                    <div class="line" style="top: 400px;"></div>
-                    <div class="line" style="top: 440px;"></div>
-                    <div class="line" style="top: 480px;"></div>
-                    <div class="line" style="top: 520px;"></div>
-                    <div class="line" style="top: 560px;"></div>
+        <div class="layout">
+            <Menu mode="horizontal" theme="dark" active-name="1">
+                <div class="layout-logo">
+                    <router-link to="/">FIR</router-link>
                 </div>
-                <div class="line-vertical">
-                    <div class="line" style="left: 0px;"></div>
-                    <div class="line" style="left: 40px;"></div>
-                    <div class="line" style="left: 80px;"></div>
-                    <div class="line" style="left: 120px;"></div>
-                    <div class="line" style="left: 160px;"></div>
-                    <div class="line" style="left: 200px;"></div>
-                    <div class="line" style="left: 240px;"></div>
-                    <div class="line" style="left: 280px;"></div>
-                    <div class="line" style="left: 320px;"></div>
-                    <div class="line" style="left: 360px;"></div>
-                    <div class="line" style="left: 400px;"></div>
-                    <div class="line" style="left: 440px;"></div>
-                    <div class="line" style="left: 480px;"></div>
-                    <div class="line" style="left: 520px;"></div>
-                    <div class="line" style="left: 560px;"></div>
+                <div class="layout-nav">
+                    <Dropdown>
+                        <span href="javascript:void(0)">
+                            Kitty
+                            <Icon type="arrow-down-b"></Icon>
+                        </span>
+                        <DropdownMenu slot="list">
+                            <DropdownItem>个人信息</DropdownItem>
+                            <DropdownItem>退出登录</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
                 </div>
-            </div>
-            <div class="chess-keys">
-                <div class="chess black-chess" style="top: 45px; left: 5px;"></div>
-                <div class="chess black-chess" style="top: 85px; left: 5px;"></div>
-                <div class="chess black-chess" style="top: 125px; left: 5px;"></div>
-                <div class="chess black-chess" style="top: 165px; left: 5px;"></div>
-                <div class="chess black-chess" style="top: 205px; left: 5px;"></div>
-                <div class="chess white-chess" style="top: 5px; left: 5px"></div>
-                <div class="chess white-chess" style="top: 45px; left: 45px"></div>
-                <div class="chess white-chess" style="top: 85px; left: 85px"></div>
-                <div class="chess white-chess" style="top: 125px; left: 125px"></div>
-                <div class="chess white-chess" style="top: 165px; left: 165px"></div>
+            </Menu>
+            <div class="layout-content">
+                <div class="layout-content-main">
+                    <router-view/>
+                </div>
             </div>
         </div>
     </div>
 </template>
 <script>
-import { Button, Modal } from 'iview'
 export default {
-    data() {
-        return {
-            visible: false
-        }
-    },
-    methods: {
-        show() {
-            this.visible = true
-        }
-    },
-    components: {
-        Button,
-        Modal
-    }
 }
 </script>
 <style lang="scss" scoped>
-$WIDTH: 560px;
-$HEIGHT: 560px;
-$BACKGROUND_COLOR: #ede5c1;
-$BACKGROUND_IMG: url(../assets/imgs/bg-img.png);
-$CHESS_WIDTH: 30px;
-.chess-area {
-    background-image: $BACKGROUND_IMG;
-    background-repeat: repeat;
-    padding: 20px;
-    width: 600px;
-    height: 600px;
-    position: relative;
-    &:hover {
-        cursor: pointer;
+    .layout{
+        // border: 1px solid #d7dde4;
+        background: #f5f7f9;
     }
-}
-.chess-lines {
-    width: $WIDTH;
-    height: $HEIGHT;
-    position: relative;
-    & > .line-horizontal {
-        & .line {
-            position: absolute;
-            height: 2px;
-            width: 100%;
-            background-color: #000;
-            box-shadow: 0px 1px 1px #333, 0px -1px 1px #333
+    .layout-logo{
+        width: 100px;
+        height: 30px;
+        // background: #5b6270;
+        color: #fff;
+        border-radius: 3px;
+        float: left;
+        // position: relative;
+        top: 15px;
+        left: 20px;
+    }
+    .layout-nav{
+        width: 100px;
+        float: right;
+        color: #fff;
+        &:hover{
+            cursor: pointer;
         }
     }
-    & > .line-vertical {
-        & .line {
-            position: absolute;
-            height: 100%;
-            width: 2px;
-            background-color: #000;
-            box-shadow: 1px 0px 1px #333, -1px 0px 1px #333
-        }
+    .layout-assistant{
+        width: 300px;
+        margin: 0 auto;
+        height: inherit;
     }
-}
-.chess-keys {
-    width: $WIDTH;
-    height: $HEIGHT;
-    position: absolute;
-    top: 0;
-    left: 0;
-    .chess {
-        width: $CHESS_WIDTH;
-        height: $CHESS_WIDTH;
-        border-radius: 50%;
-        z-index: 100;
+    .layout-content{
+        min-height: 200px;
+        margin: 15px;
+        overflow: hidden;
+        background: #fff;
+        border-radius: 4px;
     }
-    .black-chess {
-        position: absolute;
-        background-color: #aaa;
-        box-shadow: 4px -2px 20px 7px #000 inset, 1px 2px 5px #000;
+    .layout-content-main{
+        padding: 10px;
     }
-    .white-chess {
-        position: absolute;
-        background-color: #F7FBBA;
-        box-shadow: 4px -1px 20px 7px #ddd inset, 1px 2px 5px #000;
-    }
-}
-
 </style>
