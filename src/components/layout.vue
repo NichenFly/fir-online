@@ -9,7 +9,7 @@
                     <MenuItem name="1">
                         <!-- <Icon type="ios-navigate"></Icon> -->
                         <router-link to="/">
-                            <img src="src/assets/fir.png" height="60">
+                            <img src="/src/assets/fir.png" height="60">
                         </router-link>
                     </MenuItem>
                     <div class="info">Kitty 正在与 大王对战</div>
@@ -38,23 +38,29 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+$layout-menu-height: 60px; // 导航菜单高度
+$layout-background-color: #f5f7f9; // 布局内容的背景色
+$layout-color: #fff; // 导航文本颜色
+$layout-dropdown-width: 100px; // 大排行下拉菜单宽度
+.layout{
+    background: $layout-background-color;
     .ivu-menu-item {
         position: absolute;
         padding: 0;
-        height: 60px;
-        line-height: 60px;
+        height: $layout-menu-height;
+        line-height: $layout-menu-height;
     }
     .info {
-        color: #fff;
+        color: $layout-color;
         font-weight: 600;
     }
     .layout-nav > .ivu-dropdown{
-        width: 100px;
+        width: $layout-dropdown-width;
         float: right;
         position: absolute;
         right: 0;
         top: 0;
-        color: #fff;
+        color: $layout-color;
         &:hover{
             cursor: pointer;
         }
@@ -63,10 +69,11 @@ export default {
         min-height: 200px;
         margin: 15px;
         overflow: hidden;
-        background: #fff;
+        background: $layout-color;
         border-radius: 4px;
+        .layout-content-main{
+            padding: 10px;
+        }
     }
-    .layout-content-main{
-        padding: 10px;
-    }
+}
 </style>

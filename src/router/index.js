@@ -20,12 +20,12 @@ const Layout = (resolve) => {
     import('components/layout').then((module) => resolve(module))
 }
 
-const Room = (resolve) => {
-    import('components/room').then((module) => resolve(module))
+const Hall = (resolve) => {
+    import('components/hall').then((module) => resolve(module))
 }
 
-const Chess = (resolve) => {
-    import('components/chess').then((module) => resolve(module))
+const Room = (resolve) => {
+    import('components/room').then((module) => resolve(module))
 }
 
 export default new Router({
@@ -35,16 +35,16 @@ export default new Router({
             path: '/',
             name: 'layout',
             component: Layout,
-            redirect: 'room',
+            redirect: 'hall',
             children: [{
-                path: '/room',
-                name: 'room',
-                component: Room
+                path: '/hall',
+                name: 'hall',
+                component: Hall
             },
             {
-                path: '/chess',
-                name: 'chess',
-                component: Chess
+                path: '/room/:id',
+                name: 'room',
+                component: Room
             }]
         }
     ]
