@@ -31,6 +31,9 @@
                 </div>
             </div>
         </div>
+        <div class="hidden">
+            <!-- <audio src="/src/assets/sounds/bg-music.aac" autoplay="autoplay" loop="loop"></audio> -->
+        </div>
     </div>
 </template>
 <script>

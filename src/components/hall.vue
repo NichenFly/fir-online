@@ -43,9 +43,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-$room-user-width-height: 70px;
-$room-user-head-width-height: 60px;
-$room-center-chess-preview-width: 120px;
+$room-user-width-height: 70px; // 用户头像占据的宽高
+$room-user-head-width-height: 60px; // 用户头像显示的宽高
+$room-center-chess-preview-width: 120px; // 中间局势的大小
 .ivu-col {
     padding: 5px;
 }

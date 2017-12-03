@@ -50,18 +50,21 @@
                 <div class="chess white-chess" style="top: 125px; left: 165px"></div>
             </div>
         </div>
+        <div>
+            <audio src="/src/assets/sounds/down.wav" ref="chessKeyDownVoice">
+                哎呀, 您的浏览器不支持本音乐播放~~~
+            </audio>
+        </div>
     </div>
 </template>
 <script>
 export default {
-    data() {
-        return {
-            visible: false
-        }
+    created() {
+        // console.log(this.$route.params.id)
     },
     methods: {
-        show() {
-            this.visible = true
+        _playDownVoice() {
+            this.$refs.chessKeyDownVoice.play()
         }
     }
 }
