@@ -9,7 +9,7 @@
                     <MenuItem name="1">
                         <!-- <Icon type="ios-navigate"></Icon> -->
                         <router-link to="/">
-                            <img src="/src/assets/fir.png" height="60">
+                            <img src="../assets/fir.png" height="60">
                         </router-link>
                     </MenuItem>
                     <div class="info">Kitty 正在与 大王对战</div>
@@ -32,7 +32,7 @@
             </div>
         </div>
         <div class="hidden">
-            <!-- <audio src="/src/assets/sounds/bg-music.aac" autoplay="autoplay" loop="loop"></audio> -->
+            <audio src="../assets/sounds/bg-music.aac" autoplay="autoplay" loop="loop"></audio>
         </div>
     </div>
 </template>

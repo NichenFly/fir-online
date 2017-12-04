@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="chess-area">
+        <div class="chess-area" @click="_playDownVoice">
             <div class="chess-lines">
                 <div class="line-horizontal">
                     <div class="line" style="top: 0px;"></div>
@@ -51,7 +51,7 @@
             </div>
         </div>
         <div>
-            <audio src="/src/assets/sounds/down.wav" ref="chessKeyDownVoice">
+            <audio src="../assets/sounds/down.wav" ref="chessKeyDownVoice">
                 哎呀, 您的浏览器不支持本音乐播放~~~
             </audio>
         </div>

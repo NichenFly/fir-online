@@ -8,15 +8,15 @@
                         <div class="room-container">
                             <Tooltip content="Kitty" placement="top" :delay="500">
                                 <div class="left">
-                                    <img src="src/assets/imgs/index.png">
+                                    <img src="../assets/imgs/index.png">
                                 </div>
                             </Tooltip>
                             <div class="center">
-                                <img src="src/assets/imgs/index.png">
+                                <img src="../assets/imgs/index.png">
                             </div>
                             <Tooltip content="大王" placement="top" :delay="500">
                                 <div class="right">
-                                    <img src="src/assets/imgs/index.png">
+                                    <img src="../assets/imgs/index.png">
                                 </div>
                             </Tooltip>
                         </div>
