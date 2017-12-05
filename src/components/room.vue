@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="chess-area" @click="_playDownVoice">
+        <div class="chess-area" @click="down">
             <div class="chess-lines">
                 <div class="line-horizontal">
                     <div class="line" style="top: 0px;"></div>
@@ -37,17 +37,19 @@
                     <div class="line" style="left: 560px;"></div>
                 </div>
             </div>
-            <div class="chess-keys">
-                <div class="chess black-chess just" style="top: 45px; left: 5px;"></div>
-                <div class="chess black-chess just" style="top: 85px; left: 5px;"></div>
-                <div class="chess black-chess just" style="top: 125px; left: 5px;"></div>
-                <div class="chess black-chess just" style="top: 165px; left: 5px;"></div>
-                <div class="chess black-chess just" style="top: 205px; left: 5px;"></div>
-                <div class="chess white-chess" style="top: 5px; left: 5px"></div>
-                <div class="chess white-chess" style="top: 45px; left: 45px"></div>
-                <div class="chess white-chess" style="top: 85px; left: 85px"></div>
-                <div class="chess white-chess" style="top: 125px; left: 125px"></div>
-                <div class="chess white-chess" style="top: 125px; left: 165px"></div>
+            <div class="chess-keys" ref="chess">
+                <!-- <div>
+                    <div class="chess black-chess just" style="top: -15px; left: -15px;"></div>
+                </div>
+                <div>
+                    <div class="chess black-chess just" style="top: 65px; left: 65px;"></div>
+                </div>
+                <div>
+                    <div class="chess white-chess" style="top: 105px; left: 105px"></div>
+                </div>
+                <div>
+                    <div class="chess white-chess" style="top: 105px; left: 145px"></div>
+                </div> -->
             </div>
         </div>
         <div>
@@ -58,13 +60,36 @@
     </div>
 </template>
 <script>
+import { CHESS_WIDTH } from 'constants/constants'
+import { addChessKey } from 'utils/dom'
+
 export default {
     created() {
+        this.downedChess = {}
+        this.nextBlack = true
         // console.log(this.$route.params.id)
     },
     methods: {
+        down(event) {
+            if (event.target.className !== 'chess-keys' || !this._couldDown()) {
+                return
+            }
+            let x = event.layerX
+            let y = event.layerY
+            x = parseInt((x + CHESS_WIDTH / 2) / CHESS_WIDTH) * CHESS_WIDTH - 15
+            y = parseInt((y + CHESS_WIDTH / 2) / CHESS_WIDTH) * CHESS_WIDTH - 15
+            let chessDom = this.$refs.chess
+            addChessKey(chessDom, this.nextBlack, x, y)
+            this._playDownVoice()
+            this.nextBlack = !this.nextBlack
+        },
+        _couldDown() {
+            return true
+        },
         _playDownVoice() {
-            this.$refs.chessKeyDownVoice.play()
+            let voice = this.$refs.chessKeyDownVoice
+            voice.currentTime = 0
+            voice.play()
         }
     }
 }
@@ -117,8 +142,8 @@ $chess-area-redius: 10px; // 棋盘区域的圆角
     width: $chess-width-height;
     height: $chess-width-height;
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 20px;
+    left: 20px;
     .chess {
         width: $chess-key-width;
         height: $chess-key-width;
