@@ -181,15 +181,15 @@ $chess-area-redius: 10px; // 棋盘区域的圆角
     }
     .just::before {
         content: "";
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
         background-image: $background-fir-img;
         background-size: 50px 50px;
         background-position: center;
         background-repeat: no-repeat;
         position: absolute;
-        top: -15px;
-        left: -15px;
+        top: -10px;
+        left: -10px;
     }
 }
 
