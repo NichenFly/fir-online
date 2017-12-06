@@ -116,7 +116,7 @@ export default {
 <style lang="scss" scoped>
 $chess-width-height: 560px; // 棋盘宽度,高度
 $background-img: url(../assets/imgs/bg-img.png); // 棋盘背景图片
-$background-fir-img: url(../assets/imgs/fire.gif); // fired状态的背景图
+$background-fir-img: url(../assets/imgs/fire2.png); // fired状态的背景图
 $chess-key-width: 30px; // 棋子的直径
 $chess-area-width-height: 600px; // 棋盘宽高
 $chess-area-padding: 20px; // 棋盘内边距
@@ -184,7 +184,9 @@ $chess-area-redius: 10px; // 棋盘区域的圆角
         width: 60px;
         height: 60px;
         background-image: $background-fir-img;
-        background-size: 60px 60px;
+        background-size: 50px 50px;
+        background-position: center;
+        background-repeat: no-repeat;
         position: absolute;
         top: -15px;
         left: -15px;
