@@ -72,11 +72,23 @@ export default {
             chess: []
         }
     },
+    sockets: {
+        connect: function() {
+            console.log('socket connected')
+        },
+        downChess: function(msg) {
+            console.log(msg)
+        }
+    },
     created() {
         this.downedChess = {}
         this.nextBlack = true
         // console.log(this.$route.params.id)
     },
+    // mounted() {
+    //     // 在这里触发connect事件
+    //     this.$socket.emit('connect', 'x')
+    // },
     methods: {
         down(event) {
             if (event.target.className !== 'chess-keys') {
@@ -97,6 +109,7 @@ export default {
             return !this.downedChess['_' + x + '_' + y]
         },
         _addChessKey(x, y, isBlack) {
+            this.$socket.emit('down-chess', {x, y})
             let chess = this.chess
             if (chess.length > 0) {
                 chess[chess.length - 1].isJust = false

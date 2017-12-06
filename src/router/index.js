@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import { Menu, Dropdown, Icon, Card, Tooltip } from 'iview'
 import { Row, Col } from 'iview/src/components/grid'
+import VueSocketio from 'vue-socket.io'
 
 Vue.component('Menu', Menu)
 Vue.component('MenuItem', Menu.Item)
@@ -15,6 +16,7 @@ Vue.component('Col', Col)
 Vue.component('Tooltip', Tooltip)
 
 Vue.use(Router)
+Vue.use(VueSocketio, 'http://127.0.0.1:3000')
 
 const Layout = (resolve) => {
     import('components/layout').then((module) => resolve(module))
