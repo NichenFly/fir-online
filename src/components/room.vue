@@ -38,6 +38,10 @@
                 </div>
             </div>
             <div class="chess-keys" ref="chess">
+                <div class="chess" :class="[chessKey.isBlack ? 'black-chess' : 'white-chess', {'just': chessKey.isJust}]" 
+                                   :style="{top: chessKey.y + 'px', left: chessKey.x + 'px'}" 
+                                   v-for="(chessKey, index) in chess"
+                                   :key="index"></div>
                 <!-- <div>
                     <div class="chess black-chess just" style="top: -15px; left: -15px;"></div>
                 </div>
@@ -61,9 +65,13 @@
 </template>
 <script>
 import { CHESS_WIDTH } from 'constants/constants'
-import { addChessKey } from 'utils/dom'
 
 export default {
+    data() {
+        return {
+            chess: []
+        }
+    },
     created() {
         this.downedChess = {}
         this.nextBlack = true
@@ -78,13 +86,24 @@ export default {
             let y = event.layerY
             x = parseInt((x + CHESS_WIDTH / 2) / CHESS_WIDTH) * CHESS_WIDTH - 15
             y = parseInt((y + CHESS_WIDTH / 2) / CHESS_WIDTH) * CHESS_WIDTH - 15
-            let chessDom = this.$refs.chess
-            addChessKey(chessDom, this.nextBlack, x, y)
+            this._addChessKey(x, y, this.nextBlack)
             this._playDownVoice()
             this.nextBlack = !this.nextBlack
         },
         _couldDown() {
             return true
+        },
+        _addChessKey(x, y, isBlack) {
+            let chess = this.chess
+            if (chess.length > 0) {
+                chess[chess.length - 1].isJust = false
+            }
+            this.chess.push({
+                x,
+                y,
+                isBlack,
+                isJust: true
+            })
         },
         _playDownVoice() {
             let voice = this.$refs.chessKeyDownVoice
