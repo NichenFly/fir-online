@@ -79,19 +79,22 @@ export default {
     },
     methods: {
         down(event) {
-            if (event.target.className !== 'chess-keys' || !this._couldDown()) {
+            if (event.target.className !== 'chess-keys') {
                 return
             }
             let x = event.layerX
             let y = event.layerY
             x = parseInt((x + CHESS_WIDTH / 2) / CHESS_WIDTH) * CHESS_WIDTH - 15
             y = parseInt((y + CHESS_WIDTH / 2) / CHESS_WIDTH) * CHESS_WIDTH - 15
+            if (!this._couldDown(x, y)) {
+                return
+            }
             this._addChessKey(x, y, this.nextBlack)
             this._playDownVoice()
             this.nextBlack = !this.nextBlack
         },
-        _couldDown() {
-            return true
+        _couldDown(x, y) {
+            return !this.downedChess['_' + x + '_' + y]
         },
         _addChessKey(x, y, isBlack) {
             let chess = this.chess
@@ -104,6 +107,7 @@ export default {
                 isBlack,
                 isJust: true
             })
+            this.downedChess['_' + x + '_' + y] = true
         },
         _playDownVoice() {
             let voice = this.$refs.chessKeyDownVoice
