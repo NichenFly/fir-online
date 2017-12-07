@@ -16,7 +16,7 @@ Vue.component('Col', Col)
 Vue.component('Tooltip', Tooltip)
 
 Vue.use(Router)
-Vue.use(VueSocketio, 'http://127.0.0.1:3000')
+Vue.use(VueSocketio, '/')
 
 const Layout = (resolve) => {
     import('components/layout').then((module) => resolve(module))

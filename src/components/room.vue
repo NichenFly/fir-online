@@ -64,11 +64,14 @@
     </div>
 </template>
 <script>
-import { CHESS_WIDTH } from 'constants/constants'
+import { CHESS_WIDTH, CHESS_COLOR_BLACK } from 'constants/constants'
 
 export default {
     data() {
         return {
+            chessColor: CHESS_COLOR_BLACK,
+            role: 'chessing',
+            turnMe: false,
             chess: []
         }
     },
@@ -76,13 +79,21 @@ export default {
         connect: function() {
             console.log('socket connected')
         },
+        thisTimeChess: function(chess) {
+            console.log(chess)
+            this.role = chess.role
+            this.turnMe = chess.turnMe
+            this.chessColor = chess.chessColor
+        },
         downChess: function(msg) {
             console.log(msg)
+            this._addChessKey(msg.x, msg.y, msg.chessColor)
+            this.turnMe = true
         }
     },
-    created() {
+    mounted() {
         this.downedChess = {}
-        this.nextBlack = true
+        this.$socket.emit('join-room', 'default')
         // console.log(this.$route.params.id)
     },
     // mounted() {
@@ -98,18 +109,17 @@ export default {
             let y = event.layerY
             x = parseInt((x + CHESS_WIDTH / 2) / CHESS_WIDTH) * CHESS_WIDTH - 15
             y = parseInt((y + CHESS_WIDTH / 2) / CHESS_WIDTH) * CHESS_WIDTH - 15
-            if (!this._couldDown(x, y)) {
-                return
+            if (this._couldDown(x, y)) {
+                this.$socket.emit('down-chess', {x, y, chessColor: this.chessColor})
+                this._addChessKey(x, y, this.chessColor)
+                this._playDownVoice()
+                this.turnMe = false
             }
-            this._addChessKey(x, y, this.nextBlack)
-            this._playDownVoice()
-            this.nextBlack = !this.nextBlack
         },
         _couldDown(x, y) {
-            return !this.downedChess['_' + x + '_' + y]
+            return this.role === 'chessing' && this.turnMe && !this.downedChess['_' + x + '_' + y]
         },
-        _addChessKey(x, y, isBlack) {
-            this.$socket.emit('down-chess', {x, y})
+        _addChessKey(x, y, chessColor) {
             let chess = this.chess
             if (chess.length > 0) {
                 chess[chess.length - 1].isJust = false
@@ -117,7 +127,7 @@ export default {
             this.chess.push({
                 x,
                 y,
-                isBlack,
+                isBlack: chessColor,
                 isJust: true
             })
             this.downedChess['_' + x + '_' + y] = true
