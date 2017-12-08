@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import { Menu, Dropdown, Icon, Card, Tooltip } from 'iview'
+import { Menu, Dropdown, Icon, Card, Tooltip, Modal, Form, Input, Button } from 'iview'
 import { Row, Col } from 'iview/src/components/grid'
 import VueSocketio from 'vue-socket.io'
 
@@ -14,9 +14,14 @@ Vue.component('Card', Card)
 Vue.component('Row', Row)
 Vue.component('Col', Col)
 Vue.component('Tooltip', Tooltip)
+Vue.component('Modal', Modal)
+Vue.component('Form', Form)
+Vue.component('FormItem', Form.Item)
+Vue.component('Input', Input)
+Vue.component('Button', Button)
 
 Vue.use(Router)
-Vue.use(VueSocketio, '/')
+Vue.use(VueSocketio, ':3000/')
 
 const Layout = (resolve) => {
     import('components/layout').then((module) => resolve(module))

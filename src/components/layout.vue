@@ -15,7 +15,7 @@
                     <div class="info">Kitty 正在与 大王对战</div>
                     <Dropdown>
                         <span href="javascript:void(0)">
-                            Kitty
+                            {{ userName }}
                             <Icon type="arrow-down-b"></Icon>
                         </span>
                         <DropdownMenu slot="list">
@@ -37,7 +37,16 @@
     </div>
 </template>
 <script>
+import { mapGetters } from 'vuex'
 export default {
+    computed: {
+        userName() {
+            return this.user.userName || '游客'
+        },
+        ...mapGetters([
+            'user'
+        ])
+    }
 }
 </script>
 <style lang="scss" scoped>
