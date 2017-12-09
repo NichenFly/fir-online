@@ -8,7 +8,7 @@ var constants = {
     CHESS_COLOR_WHITE: false,
     roomState: {
         NOT_START: 0,
-        READY: 1
+        READY: 1,
         RUNNING: 2,
         SUSPEND: 3,
         DESTROYED: 4
@@ -89,20 +89,20 @@ io.on('connection', function (socket) {
             // if (roomObj.password !== msg.room.password) { return }
 
             switch (roomObj.chessers.length) {
-                case 2:
-                    // 已经有人下棋
-                    roomObj.watchers.push(user)
-                    break
-                case 1:
-                    // 有一个人就位了
-                    let chessers = roomObj.chessers
-                    if (chessers[0].chessColor === constants.CHESS_COLOR_BLACK) {
-                        user.chessColor = constants.CHESS_COLOR_WHITE
-                    } else {
-                        user.chessColor = constants.CHESS_COLOR_BLACK
-                    }
-                    roomObj.chessers.push(user)
-                    break
+            case 2:
+                // 已经有人下棋
+                roomObj.watchers.push(user)
+                break
+            case 1:
+                // 有一个人就位了
+                let chessers = roomObj.chessers
+                if (chessers[0].chessColor === constants.CHESS_COLOR_BLACK) {
+                    user.chessColor = constants.CHESS_COLOR_WHITE
+                } else {
+                    user.chessColor = constants.CHESS_COLOR_BLACK
+                }
+                roomObj.chessers.push(user)
+                break
             }
         } else {
             // 房间不存在
