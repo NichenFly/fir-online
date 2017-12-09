@@ -57,11 +57,24 @@ export default {
             }
         }
     },
+    sockets: {
+        connect: function(socket) {
+            console.log('socket connected')
+        },
+        roomInfos: function(rooms) {
+            console.log(rooms)
+        }
+    },
     computed: {
         ...mapGetters([
             'user',
             'userName'
         ])
+    },
+    actived() {
+        setInterval(() => {
+            this.$socket.emit('getRoomInfos')
+        }, 3000)
     },
     methods: {
         joinRoom(roomId) {

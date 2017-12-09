@@ -1,62 +1,89 @@
 <template>
     <div>
-        <div class="chess-area" @click="down">
-            <div class="chess-lines">
-                <div class="line-horizontal">
-                    <div class="line" style="top: 0px;"></div>
-                    <div class="line" style="top: 40px;"></div>
-                    <div class="line" style="top: 80px;"></div>
-                    <div class="line" style="top: 120px;"></div>
-                    <div class="line" style="top: 160px;"></div>
-                    <div class="line" style="top: 200px;"></div>
-                    <div class="line" style="top: 240px;"></div>
-                    <div class="line" style="top: 280px;"></div>
-                    <div class="line" style="top: 320px;"></div>
-                    <div class="line" style="top: 360px;"></div>
-                    <div class="line" style="top: 400px;"></div>
-                    <div class="line" style="top: 440px;"></div>
-                    <div class="line" style="top: 480px;"></div>
-                    <div class="line" style="top: 520px;"></div>
-                    <div class="line" style="top: 560px;"></div>
+        <div class="chess-container">
+            <div class="chess-one">
+                <div class="user-state">
+                    <span class=""></span>
                 </div>
-                <div class="line-vertical">
-                    <div class="line" style="left: 0px;"></div>
-                    <div class="line" style="left: 40px;"></div>
-                    <div class="line" style="left: 80px;"></div>
-                    <div class="line" style="left: 120px;"></div>
-                    <div class="line" style="left: 160px;"></div>
-                    <div class="line" style="left: 200px;"></div>
-                    <div class="line" style="left: 240px;"></div>
-                    <div class="line" style="left: 280px;"></div>
-                    <div class="line" style="left: 320px;"></div>
-                    <div class="line" style="left: 360px;"></div>
-                    <div class="line" style="left: 400px;"></div>
-                    <div class="line" style="left: 440px;"></div>
-                    <div class="line" style="left: 480px;"></div>
-                    <div class="line" style="left: 520px;"></div>
-                    <div class="line" style="left: 560px;"></div>
+                <div class="user-head">
+                    <img src="../assets/imgs/avatar/5.jpg">
+                </div>
+                <div class="user-name">
+                    大王
                 </div>
             </div>
-            <div class="chess-keys" ref="chess">
-                <div class="chess" :class="[chessKey.isBlack ? 'black-chess' : 'white-chess', {'just': chessKey.isJust}]" 
-                                   :style="{top: chessKey.y + 'px', left: chessKey.x + 'px'}" 
-                                   v-for="(chessKey, index) in chess"
-                                   :key="index"></div>
-                <!-- <div>
-                    <div class="chess black-chess just" style="top: -15px; left: -15px;"></div>
+            <div class="chess-area" @click="down">
+                <div class="drop-level" v-if="dropLevel" @click="ready">
+                    <Icon type="arrow-right-b"></Icon>
                 </div>
-                <div>
-                    <div class="chess black-chess just" style="top: 65px; left: 65px;"></div>
+                <div class="chess-lines">
+                    <div class="line-horizontal">
+                        <div class="line" style="top: 0px;"></div>
+                        <div class="line" style="top: 40px;"></div>
+                        <div class="line" style="top: 80px;"></div>
+                        <div class="line" style="top: 120px;"></div>
+                        <div class="line" style="top: 160px;"></div>
+                        <div class="line" style="top: 200px;"></div>
+                        <div class="line" style="top: 240px;"></div>
+                        <div class="line" style="top: 280px;"></div>
+                        <div class="line" style="top: 320px;"></div>
+                        <div class="line" style="top: 360px;"></div>
+                        <div class="line" style="top: 400px;"></div>
+                        <div class="line" style="top: 440px;"></div>
+                        <div class="line" style="top: 480px;"></div>
+                        <div class="line" style="top: 520px;"></div>
+                        <div class="line" style="top: 560px;"></div>
+                    </div>
+                    <div class="line-vertical">
+                        <div class="line" style="left: 0px;"></div>
+                        <div class="line" style="left: 40px;"></div>
+                        <div class="line" style="left: 80px;"></div>
+                        <div class="line" style="left: 120px;"></div>
+                        <div class="line" style="left: 160px;"></div>
+                        <div class="line" style="left: 200px;"></div>
+                        <div class="line" style="left: 240px;"></div>
+                        <div class="line" style="left: 280px;"></div>
+                        <div class="line" style="left: 320px;"></div>
+                        <div class="line" style="left: 360px;"></div>
+                        <div class="line" style="left: 400px;"></div>
+                        <div class="line" style="left: 440px;"></div>
+                        <div class="line" style="left: 480px;"></div>
+                        <div class="line" style="left: 520px;"></div>
+                        <div class="line" style="left: 560px;"></div>
+                    </div>
                 </div>
-                <div>
-                    <div class="chess white-chess" style="top: 105px; left: 105px"></div>
+                <div class="chess-keys" ref="chess">
+                    <div class="chess" :class="[chessKey.isBlack ? 'black-chess' : 'white-chess', {'just': chessKey.isJust}]" 
+                                    :style="{top: chessKey.y + 'px', left: chessKey.x + 'px'}" 
+                                    v-for="(chessKey, index) in chess"
+                                    :key="index"></div>
+                    <!-- <div>
+                        <div class="chess black-chess just" style="top: -15px; left: -15px;"></div>
+                    </div>
+                    <div>
+                        <div class="chess black-chess just" style="top: 65px; left: 65px;"></div>
+                    </div>
+                    <div>
+                        <div class="chess white-chess" style="top: 105px; left: 105px"></div>
+                    </div>
+                    <div>
+                        <div class="chess white-chess" style="top: 105px; left: 145px"></div>
+                    </div> -->
                 </div>
-                <div>
-                    <div class="chess white-chess" style="top: 105px; left: 145px"></div>
-                </div> -->
+            </div>
+            <div class="chess-another">
+                <div class="user-state">
+                    <span class=""></span>
+                </div>
+                <div class="user-head">
+                    <img src="../assets/imgs/avatar/1.jpg">
+                </div>
+                <div class="user-name">
+                    Kitty
+                </div>
             </div>
         </div>
-        <div>
+        <div class="hidden">
             <audio src="../assets/sounds/down.wav" ref="chessKeyDownVoice">
                 哎呀, 您的浏览器不支持本音乐播放~~~
             </audio>
@@ -69,6 +96,7 @@ import { CHESS_WIDTH, CHESS_COLOR_BLACK } from 'constants/constants'
 export default {
     data() {
         return {
+            dropLevel: true,
             chessColor: CHESS_COLOR_BLACK,
             role: 'chessing',
             turnMe: false,
@@ -76,7 +104,7 @@ export default {
         }
     },
     sockets: {
-        connect: function() {
+        connect: function(socket) {
             console.log('socket connected')
         },
         thisTimeChess: function(chess) {
@@ -101,6 +129,9 @@ export default {
     //     this.$socket.emit('connect', 'x')
     // },
     methods: {
+        ready() {
+            this.dropLevel = false
+        },
         down(event) {
             if (event.target.className !== 'chess-keys') {
                 return
@@ -148,6 +179,52 @@ $chess-key-width: 30px; // 棋子的直径
 $chess-area-width-height: 600px; // 棋盘宽高
 $chess-area-padding: 20px; // 棋盘内边距
 $chess-area-redius: 10px; // 棋盘区域的圆角
+.chess-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    & > .chess-one, & > .chess-another {
+        width: 300px;
+        height: 300px;
+        // background-color: #ccc;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        & > .user-state {
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            // font-size: 20px;
+            font-weight: 400;
+            & .state-ready {
+                color: green;
+            }
+            & .state-stop {
+                color: red;
+            }
+            & .state-suspend {
+                color: blueviolet;
+            }
+        }
+        & > .user-head {
+            height: 200px;
+            // width: 200px;
+            text-align: center;
+            & img {
+                width: 200px;
+                height: 200px;
+                border-radius: 50%;
+            }
+        }
+        & > .user-name {
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+        }
+    }
+}
 .chess-area {
     display: inline-flex;
     position: relative;
@@ -160,6 +237,23 @@ $chess-area-redius: 10px; // 棋盘区域的圆角
     &:hover {
         cursor: pointer;
     }
+}
+.drop-level {
+    position: absolute;
+    width: $chess-width-height;
+    height: $chess-width-height;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    & i {
+        font-size: 200px;
+    }
+    & i:hover{
+        cursor: pointer;
+        font-size: 230px;
+    }
+    
 }
 .chess-lines {
     width: $chess-width-height;
