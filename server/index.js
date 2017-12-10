@@ -76,37 +76,45 @@ let originRoom = {
 // }
 
 io.on('connection', function (socket) {
-    console.log('a user connected ...')
+    console.log('a user connected')
 
     socket.on('join-room', function (room, user) {
-        console.log('room', room)
-        console.log('user', user)
-
+        console.log(`用户: ${user.name} 创建 room: ${room.id}`)
         // 房间存在
+        if (!room || !room.id || !user || !user.id) {
+            return
+        }
         if (roomObjs[room.id]) {
             let roomObj = roomObjs[room.id]
 
             // if (roomObj.password !== msg.room.password) { return }
 
             switch (roomObj.chessers.length) {
-            case 2:
-                // 已经有人下棋
-                roomObj.watchers.push(user)
-                break
-            case 1:
-                // 有一个人就位了
-                let chessers = roomObj.chessers
-                if (chessers[0].chessColor === constants.CHESS_COLOR_BLACK) {
-                    user.chessColor = constants.CHESS_COLOR_WHITE
-                } else {
-                    user.chessColor = constants.CHESS_COLOR_BLACK
-                }
-                roomObj.chessers.push(user)
-                break
+                case 2:
+                    // 已经有人下棋
+                    roomObj.watchers.push(user)
+                    break
+                case 1:
+                    // 有一个人就位了
+                    if (roomObj.watchers.length > 0) {
+                        roomObj.watchers.push(user)
+                    } else {
+                        let chessers = roomObj.chessers
+                        if (chessers[0].chessColor === constants.CHESS_COLOR_BLACK) {
+                            user.chessColor = constants.CHESS_COLOR_WHITE
+                        } else {
+                            user.chessColor = constants.CHESS_COLOR_BLACK
+                        }
+                        roomObj.chessers.push(user)
+                    }
+                    break
             }
         } else {
             // 房间不存在
-            let roomObj = Object.assign({}, originRoom)
+            if (!user) {
+                return
+            }
+            let roomObj = JSON.parse(JSON.stringify(originRoom))
             roomObj.id = room.id
             roomObj.name = room.name
             roomObj.password = room.password
@@ -116,7 +124,7 @@ io.on('connection', function (socket) {
             roomArrays.push(roomObj)
         }
         socket.join(room.id)
-
+        console.log('roomObjs', roomObjs)
         /*roomObjs.default.users.push(socket.id)
         let roomUsers = roomObjs.default.users
         if (roomUsers.length === 1) {
@@ -129,9 +137,26 @@ io.on('connection', function (socket) {
     })
 
     socket.on('chess-state', function (room, user) {
-        // 判断是不是 chessers
+        // 判断是不是chessers
         // 判断 发送过来的状态-room.state
         // 判断是不是另一位也准备好了, 两个都是READY, 则状态置为RUNNING, 并发送广播
+        if (!room || !room.id || !user || !user.id) {
+            return
+        }
+        if (roomObjs[room.id]) {
+            let room = roomObjs[room.id]
+            let chessers = room.chessers
+            let chesser = chessers.find((chesser) => chesser.id === user.id)
+            if (chesser) {
+                chesser.state = constants.roomState.READY
+                let anotherChesser = chessers.find((chesser) => chesser.id !== user.id)
+                if (anotherChesser) {
+                    if (anotherChesser.state === constants.roomState.READY) {
+                        io.in(room.id).emit('allReady', 'Chessers are ready.')
+                    }
+                }
+            }
+        }
     })
 
     /**
@@ -205,7 +230,7 @@ io.on('connection', function (socket) {
             }
         }
         socket.leave(room.id)
-        console.log(user.id, 'disconnected')
+        console.log('a user disconnected')
     })
 })
 

@@ -6,7 +6,7 @@
                     <span class=""></span>
                 </div>
                 <div class="user-head">
-                    <img src="../assets/imgs/avatar/5.jpg">
+                    <img src="../assets/imgs/avatar/4.jpg">
                 </div>
                 <div class="user-name">
                     大王
@@ -76,7 +76,7 @@
                     <span class=""></span>
                 </div>
                 <div class="user-head">
-                    <img src="../assets/imgs/avatar/1.jpg">
+                    <img src="../assets/imgs/avatar/0.jpg">
                 </div>
                 <div class="user-name">
                     Kitty
@@ -92,6 +92,7 @@
 </template>
 <script>
 import { CHESS_WIDTH, CHESS_COLOR_BLACK } from 'constants/constants'
+import { mapGetters } from 'vuex'
 
 export default {
     data() {
@@ -103,15 +104,21 @@ export default {
             chess: []
         }
     },
+    computed: {
+        ...mapGetters([
+            'user',
+            'currentRoom'
+        ])
+    },
     sockets: {
         connect: function(socket) {
             console.log('socket connected')
         },
-        thisTimeChess: function(chess) {
-            console.log(chess)
-            this.role = chess.role
-            this.turnMe = chess.turnMe
-            this.chessColor = chess.chessColor
+        allReady: function(msg) {
+            console.log(msg)
+            // this.role = chess.role
+            // this.turnMe = chess.turnMe
+            // this.chessColor = chess.chessColor
         },
         downChess: function(msg) {
             console.log(msg)
@@ -120,8 +127,9 @@ export default {
         }
     },
     mounted() {
+        // 根据 id 获取 room 信息
+        // let roomId = this.$route.params.id
         this.downedChess = {}
-        this.$socket.emit('join-room', 'default')
         // console.log(this.$route.params.id)
     },
     // mounted() {

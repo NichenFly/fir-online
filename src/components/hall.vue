@@ -2,6 +2,15 @@
     <div>
         <Row>
             <Col span="6">
+                <div @click="createRoom">
+                    <Card>
+                        <div class="create-room">
+                            <Icon type="plus-round"></Icon>
+                        </div>
+                    </Card>
+                </div>
+            </Col>
+            <Col span="6">
                 <div @click="joinRoom(1)">
                     <Card>
                         <p slot="title">Funny room</p>
@@ -61,30 +70,60 @@ export default {
         connect: function(socket) {
             console.log('socket connected')
         },
-        roomInfos: function(rooms) {
-            console.log(rooms)
+        // 接收房间信息
+        roomInfos: function(changedRooms) {
+            let tmpRooms = this.rooms
+            changedRooms.forEach((changedRoom) => {
+                tmpRooms.unshift(changedRoom)
+                let roomIndex = tmpRooms.findIndex((room) => room.id === changedRoom.id)
+                if (~roomIndex) {
+                    tmpRooms.splice(roomIndex, 1)
+                }
+                tmpRooms.unshift(changedRoom)
+            })
+            this.setRooms(tmpRooms)
         }
     },
     computed: {
         ...mapGetters([
             'user',
-            'userName'
+            'userName',
+            'rooms'
         ])
     },
     actived() {
-        setInterval(() => {
-            this.$socket.emit('getRoomInfos')
-        }, 3000)
+        this.$socket.emit('getRoomsInfo')
+    },
+    mounted() {
+        this.socketIndex = 0
     },
     methods: {
-        joinRoom(roomId) {
-            // 如果设置了用户
+        createRoom() {
+            // 创建房间
+            console.log('create a room')
             console.log(this.user)
             if (this.user.userName) {
-                this.$router.push('/room/1')
+                let room = {
+                    id: `${this.$socket.id}_${this.socketIndex}`,
+                    name: 'Funny room',
+                    password: ''
+                }
+                this.socketIndex++
+                console.log('socketIndex', this.socketIndex)
+                let user = {
+                    id: this.user.userName,
+                    name: this.user.userName,
+                    avatar: `${parseInt(Math.random() * 10) % 5}.jpg`
+                }
+                this.$socket.emit('join-room', room, user)
+                this.$router.push(`/room/${room.id}`)
             } else {
                 this.loginModal = true
             }
+        },
+        joinRoom(roomId) {
+            // 如果设置了用户
+            this.$router.push(`/room/${roomId}`)
         },
         handleSubmit (name) {
             this.$refs[name].validate((valid) => {
@@ -94,7 +133,7 @@ export default {
                 let userName = this.formLogin.userName
                 if (userName) {
                     this.setUserName(userName)
-                    this.$router.push('/room/1')
+                    this.loginModal = false
                 }
             })
         },
@@ -102,7 +141,8 @@ export default {
             this.$refs[name].resetFields()
         },
         ...mapMutations({
-            'setUserName': 'SET_USER_NAME'
+            'setUserName': 'SET_USER_NAME',
+            'setRooms': 'SET_ROOMS'
         })
     },
     components: {
@@ -113,6 +153,11 @@ export default {
 $room-user-width-height: 70px; // 用户头像占据的宽高
 $room-user-head-width-height: 60px; // 用户头像显示的宽高
 $room-center-chess-preview-width: 120px; // 中间局势的大小
+.create-room {
+    height: 202px;
+    line-height: 202px;
+    font-size: 150px;
+}
 .ivu-col {
     padding: 5px;
 }
