@@ -10,12 +10,12 @@
                     </Card>
                 </div>
             </Col>
-            <Col span="6">
-                <div @click="joinRoom(1)">
+            <Col span="6" v-for="(room, index) in rooms" :key="index">
+                <div @click="joinRoom(room.id)">
                     <Card>
-                        <p slot="title">Funny room</p>
+                        <p slot="title">{{ room.name }}</p>
                         <div class="room-container">
-                            <Tooltip content="Kitty" placement="top" :delay="500">
+                            <Tooltip :content="room.chessers[0].name" placement="top" :delay="500" v-if="room.chessers[0]">
                                 <div class="left">
                                     <img src="../assets/imgs/index.png">
                                 </div>
@@ -23,7 +23,12 @@
                             <div class="center">
                                 <img src="../assets/imgs/index.png">
                             </div>
-                            <Tooltip content="大王" placement="top" :delay="500">
+                            <Tooltip content="暂无" placement="top" :delay="500" v-if="!room.chessers[1]">
+                                <div class="right">
+                                    <img src="../assets/imgs/index.png">
+                                </div>
+                            </Tooltip>
+                            <Tooltip :content="room.chessers[1].name" placement="top" :delay="500" v-if="room.chessers[1]">
                                 <div class="right">
                                     <img src="../assets/imgs/index.png">
                                 </div>
@@ -39,12 +44,28 @@
             title="请输入您的名字">
             <Form ref="formLogin" :model="formLogin" :rules="ruleLogin" :label-width="80">
                 <FormItem label="名字" prop="userName">
-                    <Input type="text" v-model="formLogin.userName"></Input>
+                    <Input type="text" v-model="formLogin.userName" placeholder="请输入您的名字"></Input>
                 </FormItem>
             </Form>
             <div slot="footer">
                 <Button type="primary" @click="handleSubmit('formLogin')">确定</Button>
                 <Button type="ghost" @click="handleReset('formLogin')" style="margin-left: 8px">重置</Button>
+            </div>
+        </Modal>
+        <Modal
+            v-model="roomModal"
+            title="创建房间">
+            <Form ref="formRoom" :model="formRoom" :rules="ruleRoom" :label-width="80">
+                <FormItem label="房间名字" prop="roomName">
+                    <Input type="text" v-model="formRoom.roomName" placeholder="请输入房间名字"></Input>
+                </FormItem>
+                <FormItem label="密码" prop="roomPassword">
+                    <Input type="text" v-model="formRoom.roomPassowrd" placeholder="设置房间密码"></Input>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button type="primary" @click="handleSubmit('formRoom')">确定</Button>
+                <Button type="ghost" @click="handleReset('formRoom')" style="margin-left: 8px">重置</Button>
             </div>
         </Modal>
     </div>
@@ -63,6 +84,16 @@ export default {
                 userName: [
                     { required: true, message: '名字不允许为空', trigger: 'blur' }
                 ]
+            },
+            roomModal: false,
+            formRoom: {
+                roomName: '',
+                roomPassowrd: ''
+            },
+            ruleRoom: {
+                roomName: [
+                    { required: true, message: '房间名字不允许为空', trigger: 'blur' }
+                ]
             }
         }
     },
@@ -71,52 +102,31 @@ export default {
             console.log('socket connected')
         },
         // 接收房间信息
-        roomInfos: function(changedRooms) {
-            let tmpRooms = this.rooms
-            changedRooms.forEach((changedRoom) => {
-                tmpRooms.unshift(changedRoom)
-                let roomIndex = tmpRooms.findIndex((room) => room.id === changedRoom.id)
-                if (~roomIndex) {
-                    tmpRooms.splice(roomIndex, 1)
-                }
-                tmpRooms.unshift(changedRoom)
-            })
-            this.setRooms(tmpRooms)
+        changedRoomInfo: function(changedRoom) {
+            this.setChangedRoom(changedRoom)
+        },
+        roomsInfo: function(rooms) {
+            console.log(rooms)
+            this.setRooms(rooms)
         }
     },
     computed: {
         ...mapGetters([
             'user',
-            'userName',
             'rooms'
         ])
     },
-    actived() {
-        this.$socket.emit('getRoomsInfo')
-    },
     mounted() {
-        this.socketIndex = 0
+        console.log('active connect')
+        this.$socket.emit('get-rooms-info')
+        this.setTitle('大厅')
     },
     methods: {
         createRoom() {
             // 创建房间
-            console.log('create a room')
             console.log(this.user)
             if (this.user.userName) {
-                let room = {
-                    id: `${this.$socket.id}_${this.socketIndex}`,
-                    name: 'Funny room',
-                    password: ''
-                }
-                this.socketIndex++
-                console.log('socketIndex', this.socketIndex)
-                let user = {
-                    id: this.user.userName,
-                    name: this.user.userName,
-                    avatar: `${parseInt(Math.random() * 10) % 5}.jpg`
-                }
-                this.$socket.emit('join-room', room, user)
-                this.$router.push(`/room/${room.id}`)
+                this.roomModal = true
             } else {
                 this.loginModal = true
             }
@@ -125,15 +135,38 @@ export default {
             // 如果设置了用户
             this.$router.push(`/room/${roomId}`)
         },
+        _createRoom() {
+            if (this.user.userName) {
+                let room = {
+                    id: `${this.$socket.id}_${new Date().getTime()}`,
+                    name: this.formRoom.roomName,
+                    password: this.formRoom.roomPassowrd
+                }
+                let user = {
+                    id: this.user.userName,
+                    name: this.user.userName,
+                    avatar: `${parseInt(Math.random() * 10) % 5}.jpg`
+                }
+                this.$socket.emit('join-room', room, user)
+                this.$router.push(`/room/${room.id}`)
+            }
+        },
         handleSubmit (name) {
             this.$refs[name].validate((valid) => {
                 if (!valid) {
                     return
                 }
-                let userName = this.formLogin.userName
-                if (userName) {
-                    this.setUserName(userName)
-                    this.loginModal = false
+                if (name === 'formLogin') {
+                    let userName = this.formLogin.userName
+                    if (userName) {
+                        this.setUser({
+                            id: userName,
+                            userName
+                        })
+                        this.loginModal = false
+                    }
+                } else if (name === 'formRoom') {
+                    this._createRoom()
                 }
             })
         },
@@ -141,8 +174,11 @@ export default {
             this.$refs[name].resetFields()
         },
         ...mapMutations({
+            'setTitle': 'SET_TITLE',
+            'setUser': 'SET_USER',
             'setUserName': 'SET_USER_NAME',
-            'setRooms': 'SET_ROOMS'
+            'setRooms': 'SET_ROOMS',
+            'setChangedRoom': 'SET_CHANGED_ROOM'
         })
     },
     components: {

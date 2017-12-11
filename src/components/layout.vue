@@ -12,7 +12,7 @@
                             <img src="../assets/fir.png" height="60">
                         </router-link>
                     </MenuItem>
-                    <div class="info">Kitty 正在与 大王对战</div>
+                    <div class="info">{{title}}</div>
                     <Dropdown>
                         <span href="javascript:void(0)">
                             {{ userName }}
@@ -44,6 +44,7 @@ export default {
             return this.user.userName || '游客'
         },
         ...mapGetters([
+            'title',
             'user'
         ])
     }

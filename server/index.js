@@ -75,8 +75,39 @@ let originRoom = {
 //     }]
 // }
 
+function emitChangedRoomsInfo(io, room) {
+    if (room) {
+        io.emit('changedRoomInfo', {
+            id: room.id,
+            name: room.name,
+            chessers: room.chessers,
+            watchers: room.watchers,
+            state: room.state
+        })
+    }
+}
+function emitRoomsInfo(socket) {
+    let rooms = []
+    roomArrays.forEach((room) => {
+        rooms.push({
+            id: room.id,
+            name: room.name,
+            chessers: room.chessers,
+            watchers: room.watchers,
+            state: room.state
+        })
+    })
+    socket.emit('roomsInfo', rooms)
+}
+
 io.on('connection', function (socket) {
     console.log('a user connected')
+
+    // 发送信息到该socket
+    // emitRoomsInfo(socket)
+    socket.on('get-rooms-info', function () {
+        emitRoomsInfo(socket)
+    })
 
     socket.on('join-room', function (room, user) {
         console.log(`用户: ${user.name} 创建 room: ${room.id}`)
@@ -124,6 +155,7 @@ io.on('connection', function (socket) {
             roomArrays.push(roomObj)
         }
         socket.join(room.id)
+        emitChangedRoomsInfo(io, roomObjs[room.id])
         console.log('roomObjs', roomObjs)
         /*roomObjs.default.users.push(socket.id)
         let roomUsers = roomObjs.default.users
@@ -136,10 +168,16 @@ io.on('connection', function (socket) {
         }*/
     })
 
+    socket.on('getRoomInfo', function (roomId) {
+        let room = roomObjs[roomId]
+        socket.emit('roomInfo', room)
+    })
+
     socket.on('chess-state', function (room, user) {
         // 判断是不是chessers
         // 判断 发送过来的状态-room.state
         // 判断是不是另一位也准备好了, 两个都是READY, 则状态置为RUNNING, 并发送广播
+        console.log(room)
         if (!room || !room.id || !user || !user.id) {
             return
         }
@@ -156,7 +194,9 @@ io.on('connection', function (socket) {
                     }
                 }
             }
+            emitChangedRoomsInfo(io, room)
         }
+
     })
 
     /**
@@ -207,6 +247,7 @@ io.on('connection', function (socket) {
             }
         }
         socket.leave(room.id)
+        emitChangedRoomsInfo(io, roomObj)
     })
     socket.on('disconnect', function (room, user) {
         let roomObj = roomObjs[room.id]
@@ -230,6 +271,7 @@ io.on('connection', function (socket) {
             }
         }
         socket.leave(room.id)
+        emitChangedRoomsInfo(io, roomObj)
         console.log('a user disconnected')
     })
 })

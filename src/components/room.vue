@@ -92,7 +92,7 @@
 </template>
 <script>
 import { CHESS_WIDTH, CHESS_COLOR_BLACK } from 'constants/constants'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
 
 export default {
     data() {
@@ -114,11 +114,15 @@ export default {
         connect: function(socket) {
             console.log('socket connected')
         },
+        roomInfo: function(room) {
+            if (room) {
+                this.setCurrentRoom(room)
+            } else {
+                this.$router.push('/')
+            }
+        },
         allReady: function(msg) {
             console.log(msg)
-            // this.role = chess.role
-            // this.turnMe = chess.turnMe
-            // this.chessColor = chess.chessColor
         },
         downChess: function(msg) {
             console.log(msg)
@@ -128,17 +132,20 @@ export default {
     },
     mounted() {
         // 根据 id 获取 room 信息
-        // let roomId = this.$route.params.id
+        let roomId = this.$route.params.id
         this.downedChess = {}
+        this.$socket.emit('getRoomInfo', roomId)
+        this.setTitle('房间')
         // console.log(this.$route.params.id)
     },
     // mounted() {
     //     // 在这里触发connect事件
-    //     this.$socket.emit('connect', 'x')
+    //     // this.$socket.emit('connect', 'x')
     // },
     methods: {
         ready() {
             this.dropLevel = false
+            this.$socket.emit('chess-state', this.currentRoom, this.user)
         },
         down(event) {
             if (event.target.className !== 'chess-keys') {
@@ -175,7 +182,11 @@ export default {
             let voice = this.$refs.chessKeyDownVoice
             voice.currentTime = 0
             voice.play()
-        }
+        },
+        ...mapMutations({
+            'setTitle': 'SET_TITLE',
+            'setCurrentRoom': 'SET_CURRENT_ROOM'
+        })
     }
 }
 </script>
