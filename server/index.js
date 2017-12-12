@@ -29,7 +29,7 @@ app.get('/hall', function (req, res) {
     res.sendFile(path.join(__dirname, '/index.html'))
 })
 
-app.get('/room/1', function (req, res) {
+app.get('/room/:id', function (req, res) {
     res.sendFile(path.join(__dirname, '/index.html'))
 })
 
@@ -145,6 +145,7 @@ io.on('connection', function (socket) {
                 roomObj.watchers.push(user)
                 socket.emit('chessRole', constants.chessRole.watcher)
             } else {
+
                 if (chessers.find((c) => c.id === user.id)) {
                     // 用户已在房间或者下棋者已满
                     return
