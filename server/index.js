@@ -12,6 +12,10 @@ var constants = {
         RUNNING: 2,
         SUSPEND: 3,
         DESTROYED: 4
+    },
+    chessRole: {
+        chesser: 'chesser',
+        watcher: 'watcher'
     }
 }
 
@@ -39,7 +43,7 @@ let originRoom = {
     password: '',
     chessers: [],
     watchers: [],
-    state: constants.roomState.NOT_START,
+    state: 0,
     chesses: [],
     chessesIds: {}
 }
@@ -109,66 +113,64 @@ io.on('connection', function (socket) {
         emitRoomsInfo(socket)
     })
 
+    socket.on('create-room', function (room, user) {
+        if (!room || !room.id || !user || !user.id) {
+            return
+        }
+        if (roomObjs[room.id]) {
+            console.log(`房间 ${room.name} 已存在`)
+            return
+        }
+        let roomObj = JSON.parse(JSON.stringify(originRoom))
+        roomObj.id = room.id
+        roomObj.name = room.name
+        roomObj.password = room.password
+        roomObjs[room.id] = roomObj
+        roomArrays.push(roomObj)
+        socket.emit('roomCreated', room.id)
+    })
+
     socket.on('join-room', function (room, user) {
-        console.log(`用户: ${user.name} 创建 room: ${room.id}`)
+        console.log(`用户: ${user.userName} 进入 room: ${room.id}`)
         // 房间存在
         if (!room || !room.id || !user || !user.id) {
             return
         }
         if (roomObjs[room.id]) {
             let roomObj = roomObjs[room.id]
+            let chessers = roomObj.chessers
 
             // if (roomObj.password !== msg.room.password) { return }
+            if (roomObj.state !== constants.roomState.NOT_START || chessers.length === 2) {
+                roomObj.watchers.push(user)
+                socket.emit('chessRole', constants.chessRole.watcher)
+            } else {
+                if (chessers.find((c) => c.id === user.id)) {
+                    // 用户已在房间或者下棋者已满
+                    return
+                }
 
-            switch (roomObj.chessers.length) {
-                case 2:
-                    // 已经有人下棋
-                    roomObj.watchers.push(user)
-                    break
-                case 1:
-                    // 有一个人就位了
-                    if (roomObj.watchers.length > 0) {
-                        roomObj.watchers.push(user)
+                user.state = constants.roomState.NOT_START
+
+                if (chessers.length === 0) {
+                    user.chessColor = constants.CHESS_COLOR_BLACK
+                } else {
+                    if (chessers[0].chessColor === constants.CHESS_COLOR_BLACK) {
+                        user.chessColor = constants.CHESS_COLOR_WHITE
                     } else {
-                        let chessers = roomObj.chessers
-                        if (chessers[0].chessColor === constants.CHESS_COLOR_BLACK) {
-                            user.chessColor = constants.CHESS_COLOR_WHITE
-                        } else {
-                            user.chessColor = constants.CHESS_COLOR_BLACK
-                        }
-                        roomObj.chessers.push(user)
+                        user.chessColor = constants.CHESS_COLOR_BLACK
                     }
-                    break
+                }
+                roomObj.chessers.push(user)
+                socket.emit('chessColor', user.chessColor)
+                socket.emit('chessRole', constants.chessRole.chesser)
             }
-        } else {
-            // 房间不存在
-            if (!user) {
-                return
-            }
-            let roomObj = JSON.parse(JSON.stringify(originRoom))
-            roomObj.id = room.id
-            roomObj.name = room.name
-            roomObj.password = room.password
-            user.chessColor = user.chessColor === undefined ? constants.CHESS_COLOR_BLACK : constants.CHESS_COLOR_WHITE
-            roomObj.chessers.push(user)
-            roomObjs[room.id] = roomObj
-            roomArrays.push(roomObj)
+            socket.join(room.id)
+            emitChangedRoomsInfo(io, roomObjs[room.id])
         }
-        socket.join(room.id)
-        emitChangedRoomsInfo(io, roomObjs[room.id])
-        console.log('roomObjs', roomObjs)
-        /*roomObjs.default.users.push(socket.id)
-        let roomUsers = roomObjs.default.users
-        if (roomUsers.length === 1) {
-            socket.emit('thisTimeChess', { role: 'chessing', chessColor: constants.CHESS_COLOR_BLACK, turnMe: true })
-        } else if (roomUsers.length === 2) {
-            socket.emit('thisTimeChess', { role: 'chessing', chessColor: constants.CHESS_COLOR_WHITE })
-        } else {
-            socket.emit('thisTimeChess', { role: 'watching' })
-        }*/
     })
 
-    socket.on('getRoomInfo', function (roomId) {
+    socket.on('get-room-info', function (roomId) {
         let room = roomObjs[roomId]
         socket.emit('roomInfo', room)
     })
@@ -177,48 +179,51 @@ io.on('connection', function (socket) {
         // 判断是不是chessers
         // 判断 发送过来的状态-room.state
         // 判断是不是另一位也准备好了, 两个都是READY, 则状态置为RUNNING, 并发送广播
-        console.log(room)
         if (!room || !room.id || !user || !user.id) {
             return
         }
         if (roomObjs[room.id]) {
-            let room = roomObjs[room.id]
-            let chessers = room.chessers
-            let chesser = chessers.find((chesser) => chesser.id === user.id)
+            let roomObj = roomObjs[room.id]
+            let chessers = roomObj.chessers
+            let chesser = chessers.find((c) => c.id === user.id)
             if (chesser) {
                 chesser.state = constants.roomState.READY
-                let anotherChesser = chessers.find((chesser) => chesser.id !== user.id)
+                let anotherChesser = chessers.find((c) => c.id !== user.id)
                 if (anotherChesser) {
                     if (anotherChesser.state === constants.roomState.READY) {
-                        io.in(room.id).emit('allReady', 'Chessers are ready.')
+                        roomObj.state = constants.roomState.RUNNING
+                        io.in(roomObj.id).emit('allReady', 'Chessers are ready.')
                     }
                 }
+            } else {
+                // 不在该房间
+                socket.emit('roomInfo', null)
+                return
             }
-            emitChangedRoomsInfo(io, room)
+            emitChangedRoomsInfo(io, roomObj)
         }
-
     })
 
     /**
      * 接收到下棋, 然后发送棋子信息到room的其他人
      * @param  {[type]} msg: {room: {id, name, password}, x, y, chessColor}
      */
-    socket.on('down-chess', function (msg) {
-        console.log('down-chess', msg)
-        let roomObj = roomObjs[msg.room.id]
+    socket.on('down-chess', function (roomId, chess) {
+        console.log('down-chess', chess)
+        let roomObj = roomObjs[roomId]
         if (roomObj) {
             // if (roomObj.password !== msg.room.password) { return }
-            let chessKey = `_${msg.x}_${msg.y}`
+            let chessKey = `_${chess.x}_${chess.y}`
             if (roomObj.chessesIds[chessKey]) {
                 return
             }
             roomObj.chessesIds[chessKey] = true
             roomObj.chesses.push({
-                x: msg.x,
-                y: msg.y,
-                chessColor: msg.chessColor
+                x: chess.x,
+                y: chess.y,
+                chessColor: chess.chessColor
             })
-            socket.broadcast.to(roomObj.id).emit('downChess', msg)
+            socket.broadcast.to(roomId).emit('downChess', { roomId, chess })
         }
     })
 
@@ -236,10 +241,10 @@ io.on('connection', function (socket) {
                 // 房间里没人下棋, 销毁房间
                 if (roomObj.chessers.length === 0) {
                     delete roomObjs[room.id]
-                    roomArrays = roomArrays.filter((roomTmp) => roomTmp.id === roomObj.id)
+                    roomArrays = roomArrays.filter((roomTmp) => roomTmp.id !== roomObj.id)
                 }
             } else {
-                let watchers = roomObjs.watchers
+                let watchers = roomObj.watchers
                 let watcher = watchers.find((watcher) => watcher.id === user.id)
                 if (watcher) {
                     roomObj.watchers = watchers.filter((watcher) => watcher.id !== user.id)

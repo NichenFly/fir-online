@@ -4,3 +4,8 @@ export const CHESS_WIDTH = 40
 export const CHESS_COLOR_BLACK = true
 
 export const CHESS_COLOR_WHITE = false
+
+export const CHESS_ROLE = {
+    chesser: 'chesser',
+    watcher: 'watcher'
+}

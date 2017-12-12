@@ -72,6 +72,7 @@
 </template>
 <script>
 import { mapGetters, mapMutations } from 'vuex'
+import md5 from 'js-md5'
 
 export default {
     data() {
@@ -101,12 +102,15 @@ export default {
         connect: function(socket) {
             console.log('socket connected')
         },
+        roomCreated: function(roomId) {
+            this.roomModal = false
+            this.$router.push(`/room/${roomId}`)
+        },
         // 接收房间信息
         changedRoomInfo: function(changedRoom) {
             this.setChangedRoom(changedRoom)
         },
         roomsInfo: function(rooms) {
-            console.log(rooms)
             this.setRooms(rooms)
         }
     },
@@ -124,7 +128,6 @@ export default {
     methods: {
         createRoom() {
             // 创建房间
-            console.log(this.user)
             if (this.user.userName) {
                 this.roomModal = true
             } else {
@@ -133,22 +136,26 @@ export default {
         },
         joinRoom(roomId) {
             // 如果设置了用户
-            this.$router.push(`/room/${roomId}`)
+            if (this.user.userName) {
+                this.$router.push(`/room/${roomId}`)
+            } else {
+                this.loginModal = true
+            }
         },
         _createRoom() {
             if (this.user.userName) {
+                let roomId = md5(`${this.$socket.id}_${new Date().getTime()}`)
                 let room = {
-                    id: `${this.$socket.id}_${new Date().getTime()}`,
+                    id: `_${roomId}`,
                     name: this.formRoom.roomName,
                     password: this.formRoom.roomPassowrd
                 }
                 let user = {
-                    id: this.user.userName,
+                    id: this.user.userName.replace(/\d|-/g, ''),
                     name: this.user.userName,
                     avatar: `${parseInt(Math.random() * 10) % 5}.jpg`
                 }
-                this.$socket.emit('join-room', room, user)
-                this.$router.push(`/room/${room.id}`)
+                this.$socket.emit('create-room', room, user)
             }
         },
         handleSubmit (name) {
@@ -161,7 +168,8 @@ export default {
                     if (userName) {
                         this.setUser({
                             id: userName,
-                            userName
+                            userName,
+                            avatar: `${parseInt(Math.random() * 10) % 5}.jpg`
                         })
                         this.loginModal = false
                     }

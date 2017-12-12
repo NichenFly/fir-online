@@ -91,7 +91,7 @@
     </div>
 </template>
 <script>
-import { CHESS_WIDTH, CHESS_COLOR_BLACK } from 'constants/constants'
+import { CHESS_WIDTH, CHESS_COLOR_BLACK, CHESS_ROLE } from 'constants/constants'
 import { mapGetters, mapMutations } from 'vuex'
 
 export default {
@@ -99,7 +99,7 @@ export default {
         return {
             dropLevel: true,
             chessColor: CHESS_COLOR_BLACK,
-            role: 'chessing',
+            role: CHESS_ROLE.watcher,
             turnMe: false,
             chess: []
         }
@@ -116,25 +116,40 @@ export default {
         },
         roomInfo: function(room) {
             if (room) {
+                this.$socket.emit('join-room', room, this.user)
                 this.setCurrentRoom(room)
             } else {
+                console.log('房间不存在, 跳到首页...')
                 this.$router.push('/')
             }
         },
-        allReady: function(msg) {
-            console.log(msg)
+        chessColor: function(chessColor) {
+            this.chessColor = chessColor
         },
-        downChess: function(msg) {
-            console.log(msg)
-            this._addChessKey(msg.x, msg.y, msg.chessColor)
-            this.turnMe = true
+        chessRole: function(role) {
+            this.role = role
+        },
+        allReady: function(msg) {
+            if (this.chessColor === CHESS_COLOR_BLACK && this.role === CHESS_ROLE.chesser) {
+                this.turnMe = true
+            }
+        },
+        downChess: function(chessInfo) {
+            let roomId = chessInfo.roomId
+            let chess = chessInfo.chess
+            if (roomId === this.currentRoom.id) {
+                this._addChessKey(chess.x, chess.y, chess.chessColor)
+                if (this.role === CHESS_ROLE.chesser) {
+                    this.turnMe = true
+                }
+            }
         }
     },
     mounted() {
         // 根据 id 获取 room 信息
         let roomId = this.$route.params.id
         this.downedChess = {}
-        this.$socket.emit('getRoomInfo', roomId)
+        this.$socket.emit('get-room-info', roomId)
         this.setTitle('房间')
         // console.log(this.$route.params.id)
     },
@@ -142,6 +157,9 @@ export default {
     //     // 在这里触发connect事件
     //     // this.$socket.emit('connect', 'x')
     // },
+    beforeDestroy() {
+        this.$socket.emit('leave-room', this.currentRoom, this.user)
+    },
     methods: {
         ready() {
             this.dropLevel = false
@@ -156,14 +174,14 @@ export default {
             x = parseInt((x + CHESS_WIDTH / 2) / CHESS_WIDTH) * CHESS_WIDTH - 15
             y = parseInt((y + CHESS_WIDTH / 2) / CHESS_WIDTH) * CHESS_WIDTH - 15
             if (this._couldDown(x, y)) {
-                this.$socket.emit('down-chess', {x, y, chessColor: this.chessColor})
+                this.$socket.emit('down-chess', this.currentRoom.id, {x, y, chessColor: this.chessColor})
                 this._addChessKey(x, y, this.chessColor)
                 this._playDownVoice()
                 this.turnMe = false
             }
         },
         _couldDown(x, y) {
-            return this.role === 'chessing' && this.turnMe && !this.downedChess['_' + x + '_' + y]
+            return this.role === CHESS_ROLE.chesser && this.turnMe && !this.downedChess['_' + x + '_' + y]
         },
         _addChessKey(x, y, chessColor) {
             let chess = this.chess
