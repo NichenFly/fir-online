@@ -4,6 +4,8 @@ import { Menu, Dropdown, Icon, Card, Tooltip, Modal, Form, Input, Button } from 
 import { Row, Col } from 'iview/src/components/grid'
 import VueSocketio from 'vue-socket.io'
 
+const debug = process.env.NODE_ENV !== 'production'
+
 Vue.component('Menu', Menu)
 Vue.component('MenuItem', Menu.Item)
 Vue.component('Dropdown', Dropdown)
@@ -21,7 +23,7 @@ Vue.component('Input', Input)
 Vue.component('Button', Button)
 
 Vue.use(Router)
-Vue.use(VueSocketio, ':3000/')
+Vue.use(VueSocketio, debug ? ':3000/' : '/')
 
 const Layout = (resolve) => {
     import('components/layout').then((module) => resolve(module))
