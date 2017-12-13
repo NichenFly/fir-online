@@ -145,7 +145,6 @@ io.on('connection', function (socket) {
                 roomObj.watchers.push(user)
                 socket.emit('chessRole', constants.chessRole.watcher)
             } else {
-
                 if (chessers.find((c) => c.id === user.id)) {
                     // 用户已在房间或者下棋者已满
                     return

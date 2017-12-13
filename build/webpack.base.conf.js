@@ -26,7 +26,8 @@ module.exports = {
       '@': resolve('src'),
       'components': resolve('src/components'),
       'constants': resolve('src/constants'),
-      'utils': resolve('src/utils')
+      'utils': resolve('src/utils'),
+      'assets': path.resolve(__dirname, '../src/assets')
     }
   },
   module: {

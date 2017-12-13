@@ -9,3 +9,5 @@ export const CHESS_ROLE = {
     chesser: 'chesser',
     watcher: 'watcher'
 }
+// 对弈者的显示状态
+export const chesserStates = ['未就绪', '已准备']

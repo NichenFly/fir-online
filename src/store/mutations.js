@@ -1,4 +1,5 @@
 import * as types from './mutation-types'
+import { chesserStates } from 'constants/constants'
 
 const mutations = {
     [types.SET_TITLE](state, title) {
@@ -25,6 +26,12 @@ const mutations = {
         }
     },
     [types.SET_CURRENT_ROOM](state, room) {
+        let chessers = room.chessers
+        if (chessers) {
+            chessers.forEach((chesser) => {
+                chesser.state = chesserStates[chesser.state]
+            })
+        }
         state.currentRoom = room
     }
 }

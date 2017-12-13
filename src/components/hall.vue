@@ -15,9 +15,9 @@
                     <Card>
                         <p slot="title">{{ room.name }}</p>
                         <div class="room-container">
-                            <Tooltip :content="room.chessers[0].name" placement="top" :delay="500" v-if="room.chessers[0]">
+                            <Tooltip :content="room.chessers[0].userName" placement="top" :delay="500" v-if="room.chessers[0]">
                                 <div class="left">
-                                    <img src="../assets/imgs/index.png">
+                                    <img :src="room.chessers[0].avatar">
                                 </div>
                             </Tooltip>
                             <div class="center">
@@ -28,9 +28,9 @@
                                     <img src="../assets/imgs/index.png">
                                 </div>
                             </Tooltip>
-                            <Tooltip :content="room.chessers[1].name" placement="top" :delay="500" v-if="room.chessers[1]">
+                            <Tooltip :content="room.chessers[1].userName" placement="top" :delay="500" v-if="room.chessers[1]">
                                 <div class="right">
-                                    <img src="../assets/imgs/index.png">
+                                    <img :src="room.chessers[1].avatar">
                                 </div>
                             </Tooltip>
                         </div>
@@ -68,6 +68,19 @@
                 <Button type="ghost" @click="handleReset('formRoom')" style="margin-left: 8px">重置</Button>
             </div>
         </Modal>
+        <Modal
+            v-model="passwordModal"
+            title="请输入您的名字">
+            <Form ref="formPassword" :model="formPassword" :rules="rulePassword" :label-width="80">
+                <FormItem label="名字" prop="userName">
+                    <Input type="text" v-model="formPassword.password" placeholder="请输入您的名字"></Input>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button type="primary" @click="handleSubmit('formPassword')">确定</Button>
+                <Button type="ghost" @click="handleReset('formPassword')" style="margin-left: 8px">重置</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 <script>
@@ -94,6 +107,15 @@ export default {
             ruleRoom: {
                 roomName: [
                     { required: true, message: '房间名字不允许为空', trigger: 'blur' }
+                ]
+            },
+            passwordModal: false,
+            formPassword: {
+                password: ''
+            },
+            rulePassword: {
+                password: [
+                    { required: true, message: '房间密码不允许为空', trigger: 'blur' }
                 ]
             }
         }
@@ -169,7 +191,7 @@ export default {
                         this.setUser({
                             id: userName,
                             userName,
-                            avatar: `${parseInt(Math.random() * 10) % 5}.jpg`
+                            avatar: `/static/imgs/avatar/${parseInt(Math.random() * 10) % 5}.jpg`
                         })
                         this.loginModal = false
                     }

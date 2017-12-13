@@ -1,15 +1,26 @@
 <template>
     <div>
         <div class="chess-container">
-            <div class="chess-one">
+            <div class="chess-one" v-if="currentRoom.chessers && currentRoom.chessers[0]">
+                <div class="user-state">
+                    <span class="">{{ currentRoom.chessers[0].state }}</span>
+                </div>
+                <div class="user-head">
+                    <img :src="currentRoom.chessers[0].avatar">
+                </div>
+                <div class="user-name">
+                    {{ currentRoom.chessers[0].userName }}
+                </div>
+            </div>
+            <div class="chess-one" v-if="!currentRoom.chessers || !currentRoom.chessers[0]">
                 <div class="user-state">
                     <span class=""></span>
                 </div>
                 <div class="user-head">
-                    <img src="../assets/imgs/avatar/4.jpg">
+                    <img src="../assets/imgs/index.png">
                 </div>
                 <div class="user-name">
-                    大王
+                    暂无对弈者
                 </div>
             </div>
             <div class="chess-area" @click="down">
@@ -71,15 +82,26 @@
                     </div> -->
                 </div>
             </div>
-            <div class="chess-another">
+            <div class="chess-another" v-if="currentRoom.chessers && currentRoom.chessers[1]">
+                <div class="user-state">
+                    <span class="">{{ currentRoom.chessers[1].state }}</span>
+                </div>
+                <div class="user-head">
+                    <img :src="currentRoom.chessers[1].avatar">
+                </div>
+                <div class="user-name">
+                    {{ currentRoom.chessers[1].userName }}
+                </div>
+            </div>
+            <div class="chess-another" v-if="!currentRoom.chessers || !currentRoom.chessers[1]">
                 <div class="user-state">
                     <span class=""></span>
                 </div>
                 <div class="user-head">
-                    <img src="../assets/imgs/avatar/0.jpg">
+                    <img src="../assets/imgs/index.png">
                 </div>
                 <div class="user-name">
-                    Kitty
+                    暂无对弈者
                 </div>
             </div>
         </div>
@@ -128,6 +150,11 @@ export default {
         },
         chessRole: function(role) {
             this.role = role
+        },
+        changedRoomInfo: function(changedRoom) {
+            if (this.currentRoom.id === changedRoom.id) {
+                this.setCurrentRoom(changedRoom)
+            }
         },
         allReady: function(msg) {
             if (this.chessColor === CHESS_COLOR_BLACK && this.role === CHESS_ROLE.chesser) {
