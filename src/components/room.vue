@@ -113,7 +113,7 @@
     </div>
 </template>
 <script>
-import { CHESS_WIDTH, CHESS_COLOR_BLACK, CHESS_ROLE } from 'constants/constants'
+import { CHESS_WIDTH, CHESS_COLOR_BLACK, CHESS_COLOR_WHITE, CHESS_ROLE } from 'constants/constants'
 import { mapGetters, mapMutations } from 'vuex'
 
 export default {
@@ -222,11 +222,149 @@ export default {
                 isJust: true
             })
             this.downedChess['_' + x + '_' + y] = true
+            this.judge()
         },
         _playDownVoice() {
             let voice = this.$refs.chessKeyDownVoice
             voice.currentTime = 0
             voice.play()
+        },
+        judge() {
+            let blackJudge = this._judgChess(CHESS_COLOR_BLACK)
+            if (blackJudge === true) {
+                console.log('黑子赢了')
+                if (this.chessColor === CHESS_COLOR_BLACK) {
+                    console.log('本局赢了')
+                } else {
+                    console.log('本局输了')
+                }
+                return false
+            }
+
+            let whiteJudge = this._judgChess(CHESS_COLOR_WHITE)
+            if (whiteJudge === true) {
+                console.log('白子赢了')
+                if (this.chessColor === CHESS_COLOR_WHITE) {
+                    console.log('本局赢了')
+                } else {
+                    console.log('本局输了')
+                }
+                return false
+            }
+        },
+        _judgChess(chessColor) {
+            let chess = this.chess
+            // 初始化棋盘
+            let coordinate = []
+            for (let i = 0; i < 15; i++) {
+                coordinate[i] = []
+                for (let j = 0; j < 15; j++) {
+                    coordinate[i][j] = false
+                }
+            }
+
+            // 挑选出所有的黑子
+            let chesses = chess.filter((c) => {
+                return c.isBlack === chessColor
+            })
+
+            // 把黑子放到棋盘上
+            chesses.forEach((c) => {
+                let x = (c.x + 15) / 40
+                let y = (c.y + 15) / 40
+                coordinate[x][y] = true
+            })
+
+            // 遍历棋盘
+            // 遍历行和列
+            for (let i = 0; i < 15; i++) {
+                // 遍历行
+                let xNums = 0
+                for (let j = 0; j < 15; j++) {
+                    if (coordinate[i][j]) {
+                        xNums++
+                    } else {
+                        xNums = 0
+                    }
+                    if (xNums === 5) {
+                        return true
+                    }
+                }
+
+                // 遍历列
+                let yNums = 0
+                for (let j = 0; j < 15; j++) {
+                    if (coordinate[j][i]) {
+                        yNums++
+                    } else {
+                        yNums = 0
+                    }
+                    if (yNums === 5) {
+                        return true
+                    }
+                }
+            }
+
+            // 顺时针45度角
+            let diagonalXNums = 0
+            for (let start = 4; start < 15; start++) {
+                for (let i = 0, j = start - i; i <= start; i++) {
+                    if (coordinate[i][j]) {
+                        console.log(`${i}, ${j} --- ${diagonalXNums}`)
+                        diagonalXNums++
+                    } else {
+                        diagonalXNums = 0
+                    }
+                    if (diagonalXNums === 5) {
+                        return true
+                    }
+                }
+            }
+            diagonalXNums = 0
+            for (let start = 1; start <= 10; start++) {
+                for (let i = start, j = 15 - i; i < 15; i++) {
+                    if (coordinate[i][j]) {
+                        console.log(`${i}, ${j} --- ${diagonalXNums}`)
+                        diagonalXNums++
+                    } else {
+                        diagonalXNums = 0
+                    }
+                    if (diagonalXNums === 5) {
+                        return true
+                    }
+                }
+            }
+
+            let diagonalYNums = 0
+            for (let start = 0; start <= 10; start++) {
+                for (let i = start, j = i - start; i <= 10; i++) {
+                    if (coordinate[i][j]) {
+                        console.log(`${i}, ${j} --- ${diagonalYNums}`)
+                        diagonalYNums++
+                    } else {
+                        diagonalYNums = 0
+                    }
+                    if (diagonalYNums === 5) {
+                        return true
+                    }
+                }
+            }
+            diagonalYNums = 0
+            for (let start = 0; start <= 10; start++) {
+                for (let i = 0, j = i + start; i <= 10; i++) {
+                    if (coordinate[i][j]) {
+                        console.log(`${i}, ${j} --- ${diagonalYNums}`)
+                        diagonalYNums++
+                    } else {
+                        diagonalYNums = 0
+                    }
+                    if (diagonalYNums === 5) {
+                        return true
+                    }
+                }
+            }
+            // 未定胜负
+            return null
         },
         ...mapMutations({
             'setTitle': 'SET_TITLE',
