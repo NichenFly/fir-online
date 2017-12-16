@@ -106,6 +106,7 @@
             </div>
         </div>
         <div class="hidden">
+            <img src="../assets/imgs/fire2.png" alt="预加载的图片">
             <audio src="../assets/sounds/down.wav" ref="chessKeyDownVoice">
                 哎呀, 您的浏览器不支持本音乐播放~~~
             </audio>
@@ -231,28 +232,65 @@ export default {
         },
         judge() {
             let blackJudge = this._judgChess(CHESS_COLOR_BLACK)
-            if (blackJudge === true) {
+            if (blackJudge.win === true) {
                 console.log('黑子赢了')
+                this._fireWinChess(blackJudge.lineChess)
                 if (this.chessColor === CHESS_COLOR_BLACK) {
                     console.log('本局赢了')
+                    this.$Modal.success({
+                        title: '结果',
+                        content: '赢了'
+                    })
                 } else {
                     console.log('本局输了')
+                    this.$Modal.error({
+                        title: '结果',
+                        content: '输了'
+                    })
                 }
+                this.turnMe = false
                 return false
             }
 
             let whiteJudge = this._judgChess(CHESS_COLOR_WHITE)
-            if (whiteJudge === true) {
+            if (whiteJudge.win === true) {
                 console.log('白子赢了')
+                this._fireWinChess(whiteJudge.lineChess)
                 if (this.chessColor === CHESS_COLOR_WHITE) {
                     console.log('本局赢了')
+                    this.$Modal.success({
+                        title: '结果',
+                        content: '赢了'
+                    })
                 } else {
                     console.log('本局输了')
+                    this.$Modal.error({
+                        title: '结果',
+                        content: '输了'
+                    })
                 }
+                this.turnMe = false
                 return false
             }
         },
+        _fireWinChess(chesses) {
+            let winChessObj = {}
+            chesses.forEach((c) => {
+                winChessObj[`_${c.x * 40 - 15}_${c.y * 40 - 15}`] = true
+            })
+            let thisChesses = this.chess
+            thisChesses.forEach((c) => {
+                if (winChessObj[`_${c.x}_${c.y}`]) {
+                    c.isJust = true
+                }
+            })
+        },
         _judgChess(chessColor) {
+            let result = {
+                win: null,
+                lineChess: []
+            }
+            let lineChess = result.lineChess
             let chess = this.chess
             // 初始化棋盘
             let coordinate = []
@@ -263,10 +301,14 @@ export default {
                 }
             }
 
-            // 挑选出所有的黑子
+            // 挑选出所有的黑子或者白子
             let chesses = chess.filter((c) => {
                 return c.isBlack === chessColor
             })
+
+            if (chesses.length < 5) {
+                return result
+            }
 
             // 把黑子放到棋盘上
             chesses.forEach((c) => {
@@ -279,92 +321,95 @@ export default {
             // 遍历行和列
             for (let i = 0; i < 15; i++) {
                 // 遍历行
-                let xNums = 0
+                lineChess.length = 0
                 for (let j = 0; j < 15; j++) {
                     if (coordinate[i][j]) {
-                        xNums++
+                        lineChess.push({x: i, y: j})
                     } else {
-                        xNums = 0
+                        lineChess.length = 0
                     }
-                    if (xNums === 5) {
-                        return true
+                    if (lineChess.length === 5) {
+                        result.win = true
+                        return result
                     }
                 }
 
                 // 遍历列
-                let yNums = 0
+                lineChess.length = 0
                 for (let j = 0; j < 15; j++) {
                     if (coordinate[j][i]) {
-                        yNums++
+                        lineChess.push({x: j, y: i})
                     } else {
-                        yNums = 0
+                        lineChess.length = 0
                     }
-                    if (yNums === 5) {
-                        return true
+                    if (lineChess.length === 5) {
+                        result.win = true
+                        return result
                     }
                 }
             }
 
             // 顺时针45度角
-            let diagonalXNums = 0
+            lineChess.length = 0
             for (let start = 4; start < 15; start++) {
-                for (let i = 0, j = start - i; i <= start; i++) {
+                for (let i = 0, j = start - i; i <= start; i++, j = start - i) {
                     if (coordinate[i][j]) {
-                        console.log(`${i}, ${j} --- ${diagonalXNums}`)
-                        diagonalXNums++
+                        lineChess.push({x: i, y: j})
                     } else {
-                        diagonalXNums = 0
+                        lineChess.length = 0
                     }
-                    if (diagonalXNums === 5) {
-                        return true
+                    if (lineChess.length === 5) {
+                        result.win = true
+                        return result
                     }
                 }
             }
-            diagonalXNums = 0
+            lineChess.length = 0
             for (let start = 1; start <= 10; start++) {
-                for (let i = start, j = 15 - i; i < 15; i++) {
+                for (let i = start, j = 15 - i; i < 15; i++, j = 15 - i) {
                     if (coordinate[i][j]) {
-                        console.log(`${i}, ${j} --- ${diagonalXNums}`)
-                        diagonalXNums++
+                        lineChess.push({x: i, y: j})
                     } else {
-                        diagonalXNums = 0
+                        lineChess.length = 0
                     }
-                    if (diagonalXNums === 5) {
-                        return true
+                    if (lineChess.length === 5) {
+                        result.win = true
+                        return result
                     }
                 }
             }
 
-            let diagonalYNums = 0
+            lineChess.length = 0
             for (let start = 0; start <= 10; start++) {
-                for (let i = start, j = i - start; i <= 10; i++) {
+                for (let i = start, j = i - start; i <= 10; i++, j = i - start) {
                     if (coordinate[i][j]) {
-                        console.log(`${i}, ${j} --- ${diagonalYNums}`)
-                        diagonalYNums++
+                        lineChess.push({x: i, y: j})
                     } else {
-                        diagonalYNums = 0
+                        lineChess.length = 0
                     }
-                    if (diagonalYNums === 5) {
-                        return true
+                    if (lineChess.length === 5) {
+                        result.win = true
+                        return result
                     }
                 }
             }
-            diagonalYNums = 0
+            lineChess.length = 0
             for (let start = 0; start <= 10; start++) {
-                for (let i = 0, j = i + start; i <= 10; i++) {
+                for (let i = 0, j = i + start; i <= 10; i++, j = i + start) {
                     if (coordinate[i][j]) {
-                        console.log(`${i}, ${j} --- ${diagonalYNums}`)
-                        diagonalYNums++
+                        lineChess.push({x: i, y: j})
                     } else {
-                        diagonalYNums = 0
+                        lineChess.length = 0
                     }
-                    if (diagonalYNums === 5) {
-                        return true
+                    if (lineChess.length === 5) {
+                        result.win = true
+                        return result
                     }
                 }
             }
             // 未定胜负
-            return null
+            lineChess.length = 0
+            return result
         },
         ...mapMutations({
             'setTitle': 'SET_TITLE',
@@ -515,5 +560,7 @@ $chess-area-redius: 10px; // 棋盘区域的圆角
         left: -10px;
     }
 }
-
+.hidden {
+    display: none;
+}
 </style>

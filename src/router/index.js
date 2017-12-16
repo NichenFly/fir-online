@@ -22,6 +22,7 @@ Vue.component('FormItem', Form.Item)
 Vue.component('Input', Input)
 Vue.component('Button', Button)
 
+Vue.prototype.$Modal = Modal
 Vue.use(Router)
 Vue.use(VueSocketio, debug ? ':3000/' : '/')
 
