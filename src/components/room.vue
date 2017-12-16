@@ -114,7 +114,7 @@
     </div>
 </template>
 <script>
-import { CHESS_WIDTH, CHESS_COLOR_BLACK, CHESS_COLOR_WHITE, CHESS_ROLE } from 'constants/constants'
+import { CHESS_WIDTH, CHESS_COLOR_BLACK, CHESS_COLOR_WHITE, CHESS_ROLE, roomState } from 'constants/constants'
 import { mapGetters, mapMutations } from 'vuex'
 
 export default {
@@ -124,6 +124,7 @@ export default {
             chessColor: CHESS_COLOR_BLACK,
             role: CHESS_ROLE.watcher,
             turnMe: false,
+            roomState: roomState.NOT_START,
             chess: []
         }
     },
@@ -158,17 +159,21 @@ export default {
             }
         },
         allReady: function(msg) {
+            this.roomState = roomState.READY
             if (this.chessColor === CHESS_COLOR_BLACK && this.role === CHESS_ROLE.chesser) {
                 this.turnMe = true
             }
         },
         downChess: function(chessInfo) {
-            let roomId = chessInfo.roomId
-            let chess = chessInfo.chess
-            if (roomId === this.currentRoom.id) {
-                this._addChessKey(chess.x, chess.y, chess.chessColor)
-                if (this.role === CHESS_ROLE.chesser) {
-                    this.turnMe = true
+            if (this.roomState === roomState.RUNNING || this.roomState === roomState.READY) {
+                let roomId = chessInfo.roomId
+                let chess = chessInfo.chess
+                if (roomId === this.currentRoom.id) {
+                    this.roomState = roomState.RUNNING
+                    this._addChessKey(chess.x, chess.y, chess.chessColor)
+                    if (this.role === CHESS_ROLE.chesser) {
+                        this.turnMe = true
+                    }
                 }
             }
         }
@@ -209,6 +214,10 @@ export default {
             }
         },
         _couldDown(x, y) {
+            let state = this.roomState
+            if (state === roomState.NOT_START || state === roomState.END || state === roomState.DESTROYED) {
+                return false
+            }
             return this.role === CHESS_ROLE.chesser && this.turnMe && !this.downedChess['_' + x + '_' + y]
         },
         _addChessKey(x, y, chessColor) {
@@ -232,7 +241,8 @@ export default {
         },
         judge() {
             let blackJudge = this._judgChess(CHESS_COLOR_BLACK)
-            if (blackJudge.win === true) {
+            if (blackJudge.win) {
+                this.roomState = roomState.END
                 console.log('黑子赢了')
                 this._fireWinChess(blackJudge.lineChess)
                 if (this.chessColor === CHESS_COLOR_BLACK) {
@@ -248,12 +258,12 @@ export default {
                         content: '输了'
                     })
                 }
-                this.turnMe = false
                 return false
             }
 
             let whiteJudge = this._judgChess(CHESS_COLOR_WHITE)
-            if (whiteJudge.win === true) {
+            if (whiteJudge.win) {
+                this.roomState = roomState.END
                 console.log('白子赢了')
                 this._fireWinChess(whiteJudge.lineChess)
                 if (this.chessColor === CHESS_COLOR_WHITE) {
@@ -269,7 +279,6 @@ export default {
                         content: '输了'
                     })
                 }
-                this.turnMe = false
                 return false
             }
         },

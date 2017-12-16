@@ -11,3 +11,11 @@ export const CHESS_ROLE = {
 }
 // 对弈者的显示状态
 export const chesserStates = ['未就绪', '已准备']
+
+export const roomState = {
+    NOT_START: 0,
+    READY: 1,
+    RUNNING: 2,
+    END: 3,
+    DESTROYED: 4
+}
