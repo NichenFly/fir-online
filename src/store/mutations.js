@@ -37,6 +37,12 @@ const mutations = {
             })
         }
         state.currentRoom = room
+    },
+    [types.SET_CURRENT_ROOM_STATE](state, roomState) {
+        state.currentRoom.state = roomState
+    },
+    [types.SET_CURRENT_ROOM_CHESSES](state, chesses) {
+        state.currentRoom.chesses = chesses
     }
 }
 

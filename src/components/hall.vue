@@ -131,7 +131,7 @@ export default {
             if (this.user.userName) {
                 this.roomModal = true
             } else {
-                this.$Modal.error({
+                this.$Modal.warning({
                     title: '警告',
                     content: '请先记个名字'
                 })
@@ -142,7 +142,7 @@ export default {
             if (this.user.userName) {
                 this.$router.push(`/room/${roomId}`)
             } else {
-                this.$Modal.error({
+                this.$Modal.warning({
                     title: '警告',
                     content: '请先记个名字'
                 })

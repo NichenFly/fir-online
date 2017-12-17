@@ -10,7 +10,7 @@ var constants = {
         NOT_START: 0,
         READY: 1,
         RUNNING: 2,
-        SUSPEND: 3,
+        END: 3,
         DESTROYED: 4
     },
     chessRole: {
@@ -81,7 +81,7 @@ let originRoom = {
 
 function emitChangedRoomsInfo(io, room) {
     if (room) {
-        io.emit('changedRoomInfo', {
+        io.emit('roomInfoChanged', {
             id: room.id,
             name: room.name,
             chessers: room.chessers,
@@ -192,16 +192,19 @@ io.on('connection', function (socket) {
                 if (anotherChesser) {
                     if (anotherChesser.state === constants.roomState.READY) {
                         roomObj.state = constants.roomState.RUNNING
-                        io.in(roomObj.id).emit('allReady', 'Chessers are ready.')
                     }
                 }
+                io.in(roomObj.id).emit('roomStateChanged', roomObj)
             } else {
                 // 不在该房间
                 socket.emit('roomInfo', null)
                 return
             }
-            emitChangedRoomsInfo(io, roomObj)
         }
+    })
+
+    socket.on('room-state-changed', function (roomId, state) {
+        roomObjs[roomId].state = state
     })
 
     /**

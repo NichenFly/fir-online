@@ -3,7 +3,10 @@
         <div class="chess-container">
             <div class="chess-one" v-if="currentRoom.chessers && currentRoom.chessers[0]">
                 <div class="user-state">
-                    <span class="">{{ currentRoom.chessers[0].state }}</span>
+                    <div class="turned" v-if="currentRoom.state === 2 && justChessColor !== currentRoom.chessers[0].chessColor">
+                        <Icon type="ios-color-wand"></Icon>
+                    </div>
+                    <span class=""  v-if="currentRoom.state !== 2">{{ currentRoom.chessers[0].state }}</span>
                 </div>
                 <div class="user-head">
                     <img :src="currentRoom.chessers[0].avatar">
@@ -25,7 +28,10 @@
             </div>
             <div class="chess-area" @click="down">
                 <div class="drop-level" v-if="dropLevel" @click="ready">
-                    <Icon type="arrow-right-b"></Icon>
+                    <Icon type="play"></Icon>
+                </div>
+                <div v-if="currentRoom.state === 1">
+                    <count-down :num="3" @count-down="countDown"></count-down>
                 </div>
                 <div class="chess-lines">
                     <div class="line-horizontal">
@@ -66,16 +72,10 @@
                 <div class="chess-keys" ref="chess">
                     <div class="chess" :class="[chessKey.isBlack ? 'black-chess' : 'white-chess', {'just': chessKey.isJust}]" 
                                     :style="{top: chessKey.y + 'px', left: chessKey.x + 'px'}" 
-                                    v-for="(chessKey, index) in chess"
+                                    v-for="(chessKey, index) in currentRoom.chesses"
                                     :key="index"></div>
                     <!-- <div>
                         <div class="chess black-chess just" style="top: -15px; left: -15px;"></div>
-                    </div>
-                    <div>
-                        <div class="chess black-chess just" style="top: 65px; left: 65px;"></div>
-                    </div>
-                    <div>
-                        <div class="chess white-chess" style="top: 105px; left: 105px"></div>
                     </div>
                     <div>
                         <div class="chess white-chess" style="top: 105px; left: 145px"></div>
@@ -84,7 +84,10 @@
             </div>
             <div class="chess-another" v-if="currentRoom.chessers && currentRoom.chessers[1]">
                 <div class="user-state">
-                    <span class="">{{ currentRoom.chessers[1].state }}</span>
+                    <div class="turned" v-if="currentRoom.state === 2 && justChessColor !== currentRoom.chessers[1].chessColor">
+                        <Icon type="ios-color-wand"></Icon>
+                    </div>
+                    <span class="" v-if="currentRoom.state !== 2">{{ currentRoom.chessers[1].state }}</span>
                 </div>
                 <div class="user-head">
                     <img :src="currentRoom.chessers[1].avatar">
@@ -115,17 +118,17 @@
 </template>
 <script>
 import { CHESS_WIDTH, CHESS_COLOR_BLACK, CHESS_COLOR_WHITE, CHESS_ROLE, roomState } from 'constants/constants'
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
+import CountDown from 'components/count-down'
 
 export default {
     data() {
         return {
-            dropLevel: true,
+            dropLevel: false,
             chessColor: CHESS_COLOR_BLACK,
+            justChessColor: null,
             role: CHESS_ROLE.watcher,
-            turnMe: false,
-            roomState: roomState.NOT_START,
-            chess: []
+            turnMe: false
         }
     },
     computed: {
@@ -152,24 +155,28 @@ export default {
         },
         chessRole: function(role) {
             this.role = role
+            if (role === CHESS_ROLE.chesser && this.currentRoom.state === roomState.NOT_START) {
+                this.dropLevel = true
+            }
         },
-        changedRoomInfo: function(changedRoom) {
+        roomStateChanged: function(changedRoom) {
+            this.setCurrentRoom(changedRoom)
+            if (changedRoom.state === roomState.RUNNING && this.chessColor === CHESS_COLOR_BLACK && this.role === CHESS_ROLE.chesser) {
+                this.turnMe = true
+            }
+        },
+        roomInfoChanged: function(changedRoom) {
             if (this.currentRoom.id === changedRoom.id) {
                 this.setCurrentRoom(changedRoom)
             }
         },
-        allReady: function(msg) {
-            this.roomState = roomState.READY
-            if (this.chessColor === CHESS_COLOR_BLACK && this.role === CHESS_ROLE.chesser) {
-                this.turnMe = true
-            }
-        },
         downChess: function(chessInfo) {
-            if (this.roomState === roomState.RUNNING || this.roomState === roomState.READY) {
+            console.log(this.currentRoom)
+            if (this.currentRoom.state === roomState.RUNNING) {
                 let roomId = chessInfo.roomId
                 let chess = chessInfo.chess
                 if (roomId === this.currentRoom.id) {
-                    this.roomState = roomState.RUNNING
+                    this.justChessColor = chess.chessColor
                     this._addChessKey(chess.x, chess.y, chess.chessColor)
                     if (this.role === CHESS_ROLE.chesser) {
                         this.turnMe = true
@@ -184,15 +191,12 @@ export default {
         this.downedChess = {}
         this.$socket.emit('get-room-info', roomId)
         this.setTitle('房间')
+        this.voice = this.$refs.chessKeyDownVoice
         // console.log(this.$route.params.id)
     },
     deactivated() {
         this.$socket.emit('leave-room', this.currentRoom, this.user)
     },
-    // mounted() {
-    //     // 在这里触发connect事件
-    //     // this.$socket.emit('connect', 'x')
-    // },
     beforeDestroy() {
         this.$socket.emit('leave-room', this.currentRoom, this.user)
     },
@@ -200,6 +204,10 @@ export default {
         ready() {
             this.dropLevel = false
             this.$socket.emit('chess-state', this.currentRoom, this.user)
+        },
+        countDown() {
+            console.log('countDown end')
+            this.currentRom.state = roomState.RUNNING
         },
         down(event) {
             if (event.target.className !== 'chess-keys') {
@@ -216,18 +224,13 @@ export default {
             }
         },
         _couldDown(x, y) {
-            let state = this.roomState
-            if (state === roomState.NOT_START || state === roomState.END || state === roomState.DESTROYED) {
+            if (this.currentRoom.state !== roomState.RUNNING) {
                 return false
             }
             return this.role === CHESS_ROLE.chesser && this.turnMe && !this.downedChess['_' + x + '_' + y]
         },
         _addChessKey(x, y, chessColor) {
-            let chess = this.chess
-            if (chess.length > 0) {
-                chess[chess.length - 1].isJust = false
-            }
-            this.chess.push({
+            this.addChessToCurrentRoom({
                 x,
                 y,
                 isBlack: chessColor,
@@ -238,14 +241,13 @@ export default {
             this.judge()
         },
         _playDownVoice() {
-            let voice = this.$refs.chessKeyDownVoice
+            let voice = this.voice
             voice.currentTime = 0
             voice.play()
         },
         judge() {
             let blackJudge = this._judgChess(CHESS_COLOR_BLACK)
             if (blackJudge.win) {
-                this.roomState = roomState.END
                 console.log('黑子赢了')
                 this._fireWinChess(blackJudge.lineChess)
                 if (this.chessColor === CHESS_COLOR_BLACK) {
@@ -261,12 +263,13 @@ export default {
                         content: '输了'
                     })
                 }
+                this.setCurrentRoomState(roomState.END)
+                this.$socket.emit('room-state-changed', this.currentRoom.id, roomState.END)
                 return false
             }
 
             let whiteJudge = this._judgChess(CHESS_COLOR_WHITE)
             if (whiteJudge.win) {
-                this.roomState = roomState.END
                 console.log('白子赢了')
                 this._fireWinChess(whiteJudge.lineChess)
                 if (this.chessColor === CHESS_COLOR_WHITE) {
@@ -282,6 +285,8 @@ export default {
                         content: '输了'
                     })
                 }
+                this.setCurrentRoomState(roomState.END)
+                this.$socket.emit('room-state-changed', this.currentRoom.id, roomState.END)
                 return false
             }
         },
@@ -290,12 +295,15 @@ export default {
             chesses.forEach((c) => {
                 winChessObj[`_${c.x * 40 - 15}_${c.y * 40 - 15}`] = true
             })
-            let thisChesses = this.chess
-            thisChesses.forEach((c) => {
+            let thisChesses = this.currentRoom.chesses
+            let firedChesses = thisChesses.map((c) => {
+                let firedChess = Object.assign({}, c)
                 if (winChessObj[`_${c.x}_${c.y}`]) {
-                    c.isJust = true
+                    firedChess.isJust = true
                 }
+                return firedChess
             })
+            this.setCurrentRoomChesses(firedChesses)
         },
         _judgChess(chessColor) {
             let result = {
@@ -303,7 +311,7 @@ export default {
                 lineChess: []
             }
             let lineChess = result.lineChess
-            let chess = this.chess
+            let chess = this.currentRoom.chesses
             // 初始化棋盘
             let coordinate = []
             for (let i = 0; i < 15; i++) {
@@ -425,8 +433,16 @@ export default {
         },
         ...mapMutations({
             'setTitle': 'SET_TITLE',
-            'setCurrentRoom': 'SET_CURRENT_ROOM'
-        })
+            'setCurrentRoom': 'SET_CURRENT_ROOM',
+            'setCurrentRoomState': 'SET_CURRENT_ROOM_STATE',
+            'setCurrentRoomChesses': 'SET_CURRENT_ROOM_CHESSES'
+        }),
+        ...mapActions([
+            'addChessToCurrentRoom'
+        ])
+    },
+    components: {
+        CountDown
     }
 }
 </script>
@@ -482,6 +498,11 @@ $chess-area-redius: 10px; // 棋盘区域的圆角
             font-size: 24px;
             font-weight: 600;
         }
+        & .turned {
+            font-size: 30px;
+            font-weight: 400;
+            color: blueviolet;
+        }
     }
 }
 .chess-area {
@@ -499,8 +520,8 @@ $chess-area-redius: 10px; // 棋盘区域的圆角
 }
 .drop-level {
     position: absolute;
-    width: $chess-width-height;
-    height: $chess-width-height;
+    width: 100%;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
