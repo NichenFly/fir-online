@@ -9,6 +9,10 @@ const mutations = {
         localStorage.setItem('user', JSON.stringify(user))
         state.user = user
     },
+    [types.REMOVE_USER](state) {
+        localStorage.removeItem('user')
+        state.user = { userName: '' }
+    },
     [types.SET_USER_NAME](state, userName) {
         localStorage.setItem('userName', userName)
         state.user.userName = userName

@@ -18,18 +18,42 @@
                             {{ userName }}
                             <Icon type="arrow-down-b"></Icon>
                         </span>
-                        <DropdownMenu slot="list">
-                            <DropdownItem>个人信息</DropdownItem>
-                            <DropdownItem>退出登录</DropdownItem>
+                        <DropdownMenu slot="list" v-if="user.userName">
+                            <DropdownItem>
+                                <div>个人信息</div>
+                            </DropdownItem>
+                            <DropdownItem>
+                                <div @click="logout">退出登录</div>
+                            </DropdownItem>
+                        </DropdownMenu>
+                        <DropdownMenu slot="list" v-if="!user.userName">
+                            <DropdownItem>
+                                <div @click="login">记个名字吧</div>
+                            </DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
                 </div>
             </Menu>
             <div class="layout-content">
                 <div class="layout-content-main">
-                    <router-view/>
+                    <keep-alive>
+                        <router-view/>
+                    </keep-alive>
                 </div>
             </div>
+            <Modal
+                v-model="loginModal"
+                title="请输入您的名字">
+                <Form ref="formLogin" :model="formLogin" :rules="ruleLogin" :label-width="80">
+                    <FormItem label="名字" prop="userName">
+                        <Input type="text" v-model="formLogin.userName" placeholder="请输入您的名字"></Input>
+                    </FormItem>
+                </Form>
+                <div slot="footer">
+                    <Button type="primary" @click="handleSubmit('formLogin')">确定</Button>
+                    <Button type="ghost" @click="handleReset('formLogin')" style="margin-left: 8px">重置</Button>
+                </div>
+            </Modal>
         </div>
         <div class="hidden">
             <!-- <audio src="../assets/sounds/bg-music.aac" autoplay="autoplay" loop="loop"></audio> -->
@@ -37,8 +61,21 @@
     </div>
 </template>
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
 export default {
+    data() {
+        return {
+            loginModal: false,
+            formLogin: {
+                userName: ''
+            },
+            ruleLogin: {
+                userName: [
+                    { required: true, message: '名字不允许为空', trigger: 'blur' }
+                ]
+            }
+        }
+    },
     computed: {
         userName() {
             return this.user.userName || '游客'
@@ -47,6 +84,40 @@ export default {
             'title',
             'user'
         ])
+    },
+    methods: {
+        login() {
+            this.loginModal = true
+        },
+        handleSubmit (name) {
+            this.$refs[name].validate((valid) => {
+                if (!valid) {
+                    return
+                }
+                if (name === 'formLogin') {
+                    let userName = this.formLogin.userName
+                    if (userName) {
+                        this.setUser({
+                            id: userName,
+                            userName,
+                            avatar: `/static/imgs/avatar/${parseInt(Math.random() * 10) % 5}.jpg`
+                        })
+                        this.loginModal = false
+                    }
+                }
+            })
+        },
+        logout() {
+            console.log('remove')
+            this.removeUser()
+            if (this.$route.path !== '/hall') {
+                this.$route.push('/hall')
+            }
+        },
+        ...mapMutations({
+            'setUser': 'SET_USER',
+            'removeUser': 'REMOVE_USER'
+        })
     }
 }
 </script>

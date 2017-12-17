@@ -178,13 +178,16 @@ export default {
             }
         }
     },
-    mounted() {
+    activated() {
         // 根据 id 获取 room 信息
         let roomId = this.$route.params.id
         this.downedChess = {}
         this.$socket.emit('get-room-info', roomId)
         this.setTitle('房间')
         // console.log(this.$route.params.id)
+    },
+    deactivated() {
+        this.$socket.emit('leave-room', this.currentRoom, this.user)
     },
     // mounted() {
     //     // 在这里触发connect事件

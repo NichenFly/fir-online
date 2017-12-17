@@ -54,7 +54,11 @@ export default new Router({
             {
                 path: '/room/:id',
                 name: 'room',
-                component: Room
+                component: Room,
+                beforeEnter: (to, from, next) => {
+                    // console.log(to)
+                    next()
+                }
             }]
         }
     ]

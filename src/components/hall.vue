@@ -40,19 +40,6 @@
             </Col>
         </Row>
         <Modal
-            v-model="loginModal"
-            title="请输入您的名字">
-            <Form ref="formLogin" :model="formLogin" :rules="ruleLogin" :label-width="80">
-                <FormItem label="名字" prop="userName">
-                    <Input type="text" v-model="formLogin.userName" placeholder="请输入您的名字"></Input>
-                </FormItem>
-            </Form>
-            <div slot="footer">
-                <Button type="primary" @click="handleSubmit('formLogin')">确定</Button>
-                <Button type="ghost" @click="handleReset('formLogin')" style="margin-left: 8px">重置</Button>
-            </div>
-        </Modal>
-        <Modal
             v-model="roomModal"
             title="创建房间">
             <Form ref="formRoom" :model="formRoom" :rules="ruleRoom" :label-width="80">
@@ -70,10 +57,10 @@
         </Modal>
         <Modal
             v-model="passwordModal"
-            title="请输入您的名字">
+            title="请输入您的密码">
             <Form ref="formPassword" :model="formPassword" :rules="rulePassword" :label-width="80">
                 <FormItem label="名字" prop="userName">
-                    <Input type="text" v-model="formPassword.password" placeholder="请输入您的名字"></Input>
+                    <Input type="text" v-model="formPassword.password" placeholder="请输入您的密码"></Input>
                 </FormItem>
             </Form>
             <div slot="footer">
@@ -90,15 +77,6 @@ import md5 from 'js-md5'
 export default {
     data() {
         return {
-            loginModal: false,
-            formLogin: {
-                userName: ''
-            },
-            ruleLogin: {
-                userName: [
-                    { required: true, message: '名字不允许为空', trigger: 'blur' }
-                ]
-            },
             roomModal: false,
             formRoom: {
                 roomName: '',
@@ -142,7 +120,7 @@ export default {
             'rooms'
         ])
     },
-    mounted() {
+    activated() {
         console.log('active connect')
         this.$socket.emit('get-rooms-info')
         this.setTitle('大厅')
@@ -153,7 +131,10 @@ export default {
             if (this.user.userName) {
                 this.roomModal = true
             } else {
-                this.loginModal = true
+                this.$Modal.error({
+                    title: '警告',
+                    content: '请先记个名字'
+                })
             }
         },
         joinRoom(roomId) {
@@ -161,7 +142,10 @@ export default {
             if (this.user.userName) {
                 this.$router.push(`/room/${roomId}`)
             } else {
-                this.loginModal = true
+                this.$Modal.error({
+                    title: '警告',
+                    content: '请先记个名字'
+                })
             }
         },
         _createRoom() {
@@ -193,7 +177,6 @@ export default {
                             userName,
                             avatar: `/static/imgs/avatar/${parseInt(Math.random() * 10) % 5}.jpg`
                         })
-                        this.loginModal = false
                     }
                 } else if (name === 'formRoom') {
                     this._createRoom()
