@@ -209,7 +209,6 @@ export default {
             if (this._couldDown(x, y)) {
                 this.$socket.emit('down-chess', this.currentRoom.id, {x, y, chessColor: this.chessColor})
                 this._addChessKey(x, y, this.chessColor)
-                this._playDownVoice()
                 this.turnMe = false
             }
         },
@@ -232,6 +231,7 @@ export default {
                 isJust: true
             })
             this.downedChess['_' + x + '_' + y] = true
+            this._playDownVoice()
             this.judge()
         },
         _playDownVoice() {
