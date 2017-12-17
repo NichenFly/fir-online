@@ -191,7 +191,7 @@ io.on('connection', function (socket) {
                 let anotherChesser = chessers.find((c) => c.id !== user.id)
                 if (anotherChesser) {
                     if (anotherChesser.state === constants.roomState.READY) {
-                        roomObj.state = constants.roomState.RUNNING
+                        roomObj.state = constants.roomState.READY
                     }
                 }
                 io.in(roomObj.id).emit('roomStateChanged', roomObj)
@@ -204,7 +204,12 @@ io.on('connection', function (socket) {
     })
 
     socket.on('room-state-changed', function (roomId, state) {
-        roomObjs[roomId].state = state
+        let roomObj = roomObjs[roomId]
+        if (roomObj && roomObj.state !== state) {
+            roomObj.state = state
+            console.log(roomObj)
+            io.in(roomObj.id).emit('roomStateChanged', roomObj)
+        }
     })
 
     /**
