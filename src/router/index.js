@@ -56,7 +56,7 @@ export default new Router({
                 name: 'room',
                 component: Room,
                 beforeEnter: (to, from, next) => {
-                    console.log(to)
+                    // console.log(to)
                     next()
                 }
             }]

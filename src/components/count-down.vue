@@ -20,13 +20,15 @@ export default {
             countDownInfo: 0
         }
     },
-    activated() {
+    mounted() {
         this.countDownInfo = this.num
         let countDown = window.setInterval(() => {
             this.countDownInfo--
-            if (this.countDownInfo < 1) {
+            if (this.countDownInfo === 0) {
                 this.countDownInfo = '开始'
-                this.$emit('count-down')
+                window.setTimeout(() => {
+                    this.$emit('count-down')
+                }, 1000)
                 window.clearInterval(countDown)
             }
         }, 1000)

@@ -74,12 +74,6 @@
                                     :style="{top: chessKey.y + 'px', left: chessKey.x + 'px'}" 
                                     v-for="(chessKey, index) in currentRoom.chesses"
                                     :key="index"></div>
-                    <!-- <div>
-                        <div class="chess black-chess just" style="top: -15px; left: -15px;"></div>
-                    </div>
-                    <div>
-                        <div class="chess white-chess" style="top: 105px; left: 145px"></div>
-                    </div> -->
                 </div>
             </div>
             <div class="chess-another" v-if="currentRoom.chessers && currentRoom.chessers[1]">
@@ -160,6 +154,10 @@ export default {
             }
         },
         roomStateChanged: function(changedRoom) {
+            console.log(changedRoom)
+            if (changedRoom.state === roomState.END) {
+                return
+            }
             this.setCurrentRoom(changedRoom)
             if (changedRoom.state === roomState.RUNNING && this.chessColor === CHESS_COLOR_BLACK && this.role === CHESS_ROLE.chesser) {
                 this.turnMe = true
@@ -171,7 +169,6 @@ export default {
             }
         },
         downChess: function(chessInfo) {
-            console.log(this.currentRoom)
             if (this.currentRoom.state === roomState.RUNNING) {
                 let roomId = chessInfo.roomId
                 let chess = chessInfo.chess
@@ -206,8 +203,7 @@ export default {
             this.$socket.emit('chess-state', this.currentRoom, this.user)
         },
         countDown() {
-            console.log('countDown end')
-            this.currentRom.state = roomState.RUNNING
+            this.$socket.emit('room-state-changed', this.currentRoom.id, roomState.RUNNING)
         },
         down(event) {
             if (event.target.className !== 'chess-keys') {
