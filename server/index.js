@@ -22,14 +22,20 @@ var constants = {
 app.use('/static', express.static('static'))
 
 app.get('/', function (req, res) {
+    let clientIp = getClientIp(req)
+    console.log(`${clientIp} 访问系统主页`)
     res.sendFile(path.join(__dirname, '/index.html'))
 })
 
 app.get('/hall', function (req, res) {
+    let clientIp = getClientIp(req)
+    console.log(`${clientIp} 访问系统大厅`)
     res.sendFile(path.join(__dirname, '/index.html'))
 })
 
 app.get('/room/:id', function (req, res) {
+    let clientIp = getClientIp(req)
+    console.log(`${clientIp} 进入房间`)
     res.sendFile(path.join(__dirname, '/index.html'))
 })
 
@@ -46,6 +52,13 @@ let originRoom = {
     state: 0,
     chesses: [],
     chessesIds: {}
+}
+
+function getClientIp(req) {
+    return req.headers['x-forwarded-for'] ||
+        req.connection.remoteAddress ||
+        req.socket.remoteAddress ||
+        req.connection.socket.remoteAddress
 }
 
 // 定义房间对象
@@ -128,6 +141,7 @@ io.on('connection', function (socket) {
         roomObjs[room.id] = roomObj
         roomArrays.push(roomObj)
         socket.emit('roomCreated', room.id)
+        emitChangedRoomsInfo(io, roomObj)
     })
 
     socket.on('join-room', function (room, user) {
@@ -198,7 +212,6 @@ io.on('connection', function (socket) {
             } else {
                 // 不在该房间
                 socket.emit('roomInfo', null)
-                return
             }
         }
     })
@@ -248,6 +261,7 @@ io.on('connection', function (socket) {
 
                 // 房间里没人下棋, 销毁房间
                 if (roomObj.chessers.length === 0) {
+                    roomObj.state = constants.roomState.DESTROYED
                     delete roomObjs[room.id]
                     roomArrays = roomArrays.filter((roomTmp) => roomTmp.id !== roomObj.id)
                 }
@@ -272,6 +286,7 @@ io.on('connection', function (socket) {
 
                 // 房间里没人下棋, 销毁房间
                 if (roomObj.chessers.length === 0) {
+                    roomObj.state = constants.roomState.DESTROYED
                     delete roomObjs[room.id]
                     roomArrays = roomArrays.filter((roomTmp) => roomTmp.id === roomObj.id)
                 }

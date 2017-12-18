@@ -1,4 +1,5 @@
 import * as types from './mutation-types'
+import { roomState } from '../constants/constants'
 
 export const addChessToCurrentRoom = function ({commit, state}, chess) {
     let chesses = state.currentRoom.chesses.slice()
@@ -12,4 +13,19 @@ export const addChessToCurrentRoom = function ({commit, state}, chess) {
         chesses.push(chess)
     }
     commit(types.SET_CURRENT_ROOM_CHESSES, chesses)
+}
+
+export const setChangedRoom = function({commit, state}, changedRoom) {
+    let tmpRooms = state.rooms.slice()
+    let roomIndex = tmpRooms.findIndex((room) => room.id === changedRoom.id)
+    if (~roomIndex) {
+        if (changedRoom.state === roomState.DESTROYED) {
+            tmpRooms.splice(roomIndex, 1)
+        } else {
+            tmpRooms[roomIndex] = changedRoom
+        }
+    } else {
+        tmpRooms.unshift(changedRoom)
+    }
+    commit(types.SET_ROOMS, tmpRooms)
 }

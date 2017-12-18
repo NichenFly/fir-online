@@ -20,15 +20,6 @@ const mutations = {
     [types.SET_ROOMS](state, rooms) {
         state.rooms = rooms
     },
-    [types.SET_CHANGED_ROOM](state, changedRoom) {
-        let tmpRooms = state.rooms
-        let roomIndex = tmpRooms.findIndex((room) => room.id === changedRoom.id)
-        if (~roomIndex) {
-            state.rooms[roomIndex] = changedRoom
-        } else {
-            state.rooms.push(changedRoom)
-        }
-    },
     [types.SET_CURRENT_ROOM](state, room) {
         let chessers = room.chessers
         if (chessers) {

@@ -139,6 +139,7 @@ export default {
             if (room) {
                 this.$socket.emit('join-room', room, this.user)
                 this.setCurrentRoom(room)
+                this.setTitle(room.name)
             } else {
                 console.log('房间不存在, 跳到首页...')
                 this.$router.push('/')
@@ -154,7 +155,6 @@ export default {
             }
         },
         roomStateChanged: function(changedRoom) {
-            console.log(changedRoom)
             if (changedRoom.state === roomState.END) {
                 return
             }
@@ -184,11 +184,15 @@ export default {
     },
     activated() {
         // 根据 id 获取 room 信息
-        let roomId = this.$route.params.id
-        this.downedChess = {}
-        this.$socket.emit('get-room-info', roomId)
-        this.setTitle('房间')
-        this.voice = this.$refs.chessKeyDownVoice
+        if (this.user.userName) {
+            let roomId = this.$route.params.id
+            this.downedChess = {}
+            this.$socket.emit('get-room-info', roomId)
+            this.setTitle('房间')
+            this.voice = this.$refs.chessKeyDownVoice
+        } else {
+            this.$router.push('/hall')
+        }
         // console.log(this.$route.params.id)
     },
     deactivated() {

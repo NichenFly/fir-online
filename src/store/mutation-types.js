@@ -8,8 +8,6 @@ export const REMOVE_USER = 'REMOVE_USER'
 
 export const SET_ROOMS = 'SET_ROOMS'
 
-export const SET_CHANGED_ROOM = 'SET_CHANGED_ROOM'
-
 export const SET_CURRENT_ROOM = 'SET_CURRENT_ROOM'
 
 export const SET_CURRENT_ROOM_STATE = 'SET_CURRENT_ROOM_STATE'

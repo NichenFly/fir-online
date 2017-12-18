@@ -71,7 +71,7 @@
     </div>
 </template>
 <script>
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations, mapActions } from 'vuex'
 import md5 from 'js-md5'
 
 export default {
@@ -101,13 +101,15 @@ export default {
     sockets: {
         connect: function(socket) {
             console.log('socket connected')
+            this.$socket.emit('get-rooms-info')
+            this.setTitle('大厅')
         },
         roomCreated: function(roomId) {
             this.roomModal = false
             this.$router.push(`/room/${roomId}`)
         },
         // 接收房间信息
-        changedRoomInfo: function(changedRoom) {
+        roomInfoChanged: function(changedRoom) {
             this.setChangedRoom(changedRoom)
         },
         roomsInfo: function(rooms) {
@@ -190,9 +192,11 @@ export default {
             'setTitle': 'SET_TITLE',
             'setUser': 'SET_USER',
             'setUserName': 'SET_USER_NAME',
-            'setRooms': 'SET_ROOMS',
-            'setChangedRoom': 'SET_CHANGED_ROOM'
-        })
+            'setRooms': 'SET_ROOMS'
+        }),
+        ...mapActions([
+            'setChangedRoom'
+        ])
     },
     components: {
     }
