@@ -3,7 +3,7 @@
         <div class="chess-container">
             <div class="chess-one" v-if="currentRoom.chessers && currentRoom.chessers[0]">
                 <div class="user-state">
-                    <div class="turned" v-if="currentRoom.state === 2 && justChessColor !== currentRoom.chessers[0].chessColor">
+                    <div class="turned" v-if="currentRoom.state === 2 && ((turnMe && user.id === currentRoom.chessers[0].id) || (!turnMe && user.id !== currentRoom.chessers[0].id))">
                         <Icon type="ios-color-wand"></Icon>
                     </div>
                     <span class=""  v-if="currentRoom.state !== 2">{{ currentRoom.chessers[0].state }}</span>
@@ -78,7 +78,7 @@
             </div>
             <div class="chess-another" v-if="currentRoom.chessers && currentRoom.chessers[1]">
                 <div class="user-state">
-                    <div class="turned" v-if="currentRoom.state === 2 && justChessColor !== currentRoom.chessers[1].chessColor">
+                    <div class="turned" v-if="currentRoom.state === 2 && ((turnMe && user.id === currentRoom.chessers[1].id) || (!turnMe && user.id !== currentRoom.chessers[1].id))">
                         <Icon type="ios-color-wand"></Icon>
                     </div>
                     <span class="" v-if="currentRoom.state !== 2">{{ currentRoom.chessers[1].state }}</span>
@@ -120,7 +120,6 @@ export default {
         return {
             dropLevel: false,
             chessColor: CHESS_COLOR_BLACK,
-            justChessColor: null,
             role: CHESS_ROLE.watcher,
             turnMe: false
         }
@@ -173,7 +172,6 @@ export default {
                 let roomId = chessInfo.roomId
                 let chess = chessInfo.chess
                 if (roomId === this.currentRoom.id) {
-                    this.justChessColor = chess.chessColor
                     this._addChessKey(chess.x, chess.y, chess.chessColor)
                     if (this.role === CHESS_ROLE.chesser) {
                         this.turnMe = true

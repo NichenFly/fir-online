@@ -220,7 +220,6 @@ io.on('connection', function (socket) {
         let roomObj = roomObjs[roomId]
         if (roomObj && roomObj.state !== state) {
             roomObj.state = state
-            console.log(roomObj)
             io.in(roomObj.id).emit('roomStateChanged', roomObj)
         }
     })
