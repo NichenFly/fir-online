@@ -23,6 +23,7 @@ npm run build --report
 ### 后端构建
 ```
 # 安装依赖
+cd server
 npm install
 
 # 启动运行
