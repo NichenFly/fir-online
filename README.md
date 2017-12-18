@@ -2,20 +2,31 @@
 
 > 在线五子棋
 
-## Build Setup
+## 构建步骤
+
+###前端构建
 
 ``` bash
-# install dependencies
+# 安装依赖
 npm install
 
-# serve with hot reload at localhost:8080
+# 服务器启动地址 localhost:8080
 npm run dev
 
-# build for production with minification
+# 打包构建
 npm run build
 
-# build for production and view the bundle analyzer report
+# 打包构建并查看详细报告
 npm run build --report
+```
+
+###后端构建
+```
+# 安装依赖
+npm install
+
+# 启动运行
+node index.js
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
