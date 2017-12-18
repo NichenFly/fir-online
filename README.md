@@ -4,7 +4,7 @@
 
 ## 构建步骤
 
-###前端构建 
+### 前端构建
 
 ``` bash
 # 安装依赖
@@ -20,7 +20,7 @@ npm run build
 npm run build --report
 ```
 
-###后端构建 
+### 后端构建
 ```
 # 安装依赖
 npm install
@@ -28,3 +28,5 @@ npm install
 # 启动运行
 node index.js
 ```
+
+For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
