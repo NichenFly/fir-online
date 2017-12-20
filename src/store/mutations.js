@@ -34,6 +34,9 @@ const mutations = {
     },
     [types.SET_CURRENT_ROOM_CHESSES](state, chesses) {
         state.currentRoom.chesses = chesses
+    },
+    [types.SET_CURRENT_ROOM_PASSWORD](state, password) {
+        state.currentRoomPassword = password
     }
 }
 

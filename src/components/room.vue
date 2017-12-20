@@ -108,26 +108,68 @@
                 哎呀, 您的浏览器不支持本音乐播放~~~
             </audio>
         </div>
+        <Modal
+            v-model="passwordModal"
+            title="请输入您的密码">
+            <Form ref="formPassword" 
+                :model="formPassword" 
+                :rules="rulePassword" 
+                :label-width="80">
+                <FormItem label="密码" prop="password">
+                    <Input type="text" v-model="formPassword.password" placeholder="请输入您的密码"></Input>
+                </FormItem>
+            </Form>
+            <div slot="footer">
+                <Button type="primary" @click="handleSubmit('formPassword')">确定</Button>
+                <Button type="ghost" @click="handleReset('formPassword')" style="margin-left: 8px">重置</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 <script>
 import { CHESS_WIDTH, CHESS_COLOR_BLACK, CHESS_COLOR_WHITE, CHESS_ROLE, roomState } from 'constants/constants'
 import { mapGetters, mapMutations, mapActions } from 'vuex'
 import CountDown from 'components/count-down'
+import md5 from 'js-md5'
 
 export default {
     data() {
+        const validatePassword = (rule, value, callback) => {
+            if (value === '') {
+                callback(new Error('房间密码不允许为空'))
+            } else {
+                let password = this.formPassword.password
+                let willJoinedRoom = this.willJoinedRoom
+                if (willJoinedRoom.password === md5(`${willJoinedRoom.id}_${password}`)) {
+                    this.setCurrentRoomPassword(willJoinedRoom.password)
+                    callback()
+                } else {
+                    callback(new Error('密码不正确'))
+                }
+            }
+        }
         return {
             dropLevel: false,
             chessColor: CHESS_COLOR_BLACK,
             role: CHESS_ROLE.watcher,
-            turnMe: false
+            turnMe: false,
+            passwordModal: false,
+            formPassword: {
+                password: ''
+            },
+            rulePassword: {
+                password: [
+                    { required: true, message: '房间密码不允许为空' },
+                    { validator: validatePassword, trigger: 'blur' }
+                ]
+            }
         }
     },
     computed: {
         ...mapGetters([
             'user',
-            'currentRoom'
+            'currentRoom',
+            'currentRoomPassword'
         ])
     },
     sockets: {
@@ -136,9 +178,15 @@ export default {
         },
         roomInfo: function(room) {
             if (room) {
-                this.$socket.emit('join-room', room, this.user)
-                this.setCurrentRoom(room)
-                this.setTitle(room.name)
+                if (!room.password || (room.password && room.password === this.currentRoomPassword)) {
+                    this.$socket.emit('join-room', room, this.user)
+                    this.setCurrentRoom(room)
+                    this.setTitle(room.name)
+                } else {
+                    this.willJoinedRoom = room
+                    this.formPassword.password = ''
+                    this.passwordModal = true
+                }
             } else {
                 console.log('房间不存在, 跳到首页...')
                 this.$router.push('/')
@@ -183,6 +231,7 @@ export default {
     activated() {
         // 根据 id 获取 room 信息
         if (this.user.userName) {
+            this.willJoinedRoom = {}
             let roomId = this.$route.params.id
             this.downedChess = {}
             this.$socket.emit('get-room-info', roomId)
@@ -200,6 +249,33 @@ export default {
         this.$socket.emit('leave-room', this.currentRoom, this.user)
     },
     methods: {
+        handleSubmit (name) {
+            this.$refs[name].validate((valid) => {
+                if (!valid) {
+                    return
+                }
+                switch (name) {
+                case 'formPassword':
+                    let password = this.formPassword.password
+                    let willJoinedRoom = this.willJoinedRoom
+                    if (willJoinedRoom.password === md5(`${willJoinedRoom.id}_${password}`)) {
+                        this.setCurrentRoomPassword(willJoinedRoom.password)
+                        this.$socket.emit('join-room', willJoinedRoom, this.user)
+                        this.setCurrentRoom(willJoinedRoom)
+                        this.setTitle(willJoinedRoom.name)
+                        this.passwordModal = false
+                        // 需要先确定角色
+                        // if (willJoinedRoom.state === roomState.NOT_START) {
+                        //     this.dropLevel = true
+                        // }
+                        this.willJoinedRoom = {}
+                    }
+                    break
+                default:
+                    break
+                }
+            })
+        },
         ready() {
             this.dropLevel = false
             this.$socket.emit('chess-state', this.currentRoom, this.user)
@@ -433,7 +509,8 @@ export default {
             'setTitle': 'SET_TITLE',
             'setCurrentRoom': 'SET_CURRENT_ROOM',
             'setCurrentRoomState': 'SET_CURRENT_ROOM_STATE',
-            'setCurrentRoomChesses': 'SET_CURRENT_ROOM_CHESSES'
+            'setCurrentRoomChesses': 'SET_CURRENT_ROOM_CHESSES',
+            'setCurrentRoomPassword': 'SET_CURRENT_ROOM_PASSWORD'
         }),
         ...mapActions([
             'addChessToCurrentRoom'

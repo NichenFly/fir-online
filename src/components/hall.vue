@@ -42,7 +42,10 @@
         <Modal
             v-model="roomModal"
             title="创建房间">
-            <Form ref="formRoom" :model="formRoom" :rules="ruleRoom" :label-width="80">
+            <Form ref="formRoom" 
+                :model="formRoom" 
+                :rules="formRules" 
+                :label-width="80">
                 <FormItem label="房间名字" prop="roomName">
                     <Input type="text" v-model="formRoom.roomName" placeholder="请输入房间名字"></Input>
                 </FormItem>
@@ -58,8 +61,11 @@
         <Modal
             v-model="passwordModal"
             title="请输入您的密码">
-            <Form ref="formPassword" :model="formPassword" :rules="rulePassword" :label-width="80">
-                <FormItem label="名字" prop="userName">
+            <Form ref="formPassword" 
+                :model="formPassword"
+                :rules="formRules"
+                :label-width="80">
+                <FormItem label="密码" prop="password">
                     <Input type="text" v-model="formPassword.password" placeholder="请输入您的密码"></Input>
                 </FormItem>
             </Form>
@@ -76,25 +82,38 @@ import md5 from 'js-md5'
 
 export default {
     data() {
+        const validatePassword = (rule, value, callback) => {
+            if (value === '') {
+                callback(new Error('请输入密码'))
+            } else {
+                let password = this.formPassword.password
+                let willJoinedRoom = this.willJoinedRoom
+                if (willJoinedRoom.password === md5(`${willJoinedRoom.id}_${password}`)) {
+                    this.setCurrentRoomPassword(willJoinedRoom.password)
+                    callback()
+                } else {
+                    callback(new Error('密码不正确'))
+                }
+            }
+        }
         return {
             roomModal: false,
             formRoom: {
                 roomName: '',
                 roomPassowrd: ''
             },
-            ruleRoom: {
+            formRules: {
                 roomName: [
                     { required: true, message: '房间名字不允许为空', trigger: 'blur' }
+                ],
+                password: [
+                    { required: true, message: '房间密码不允许为空' },
+                    { validator: validatePassword, trigger: 'blur' }
                 ]
             },
             passwordModal: false,
             formPassword: {
                 password: ''
-            },
-            rulePassword: {
-                password: [
-                    { required: true, message: '房间密码不允许为空', trigger: 'blur' }
-                ]
             }
         }
     },
@@ -123,6 +142,7 @@ export default {
         ])
     },
     activated() {
+        this.willJoinedRoom = {}
         console.log('active connect')
         this.$socket.emit('get-rooms-info')
         this.setTitle('大厅')
@@ -142,7 +162,16 @@ export default {
         joinRoom(roomId) {
             // 如果设置了用户
             if (this.user.userName) {
-                this.$router.push(`/room/${roomId}`)
+                let room = this.rooms.find(r => r.id === roomId)
+                if (room) {
+                    if (!room.password || (room.password && room.password === this.setCurrentRoomPassword)) {
+                        this.$router.push(`/room/${roomId}`)
+                    } else {
+                        this.willJoinedRoom = room
+                        this.formPassword.password = ''
+                        this.passwordModal = true
+                    }
+                }
             } else {
                 this.$Modal.warning({
                     title: '警告',
@@ -152,18 +181,20 @@ export default {
         },
         _createRoom() {
             if (this.user.userName) {
-                let roomId = md5(`${this.$socket.id}_${new Date().getTime()}`)
+                let roomId = md5(`${this.$socket.id}_${new Date().getTime()}`).substring(10)
+                let password = this.formRoom.roomPassowrd
                 let room = {
-                    id: `_${roomId}`,
+                    id: `_room_${roomId}`,
                     name: this.formRoom.roomName,
-                    password: this.formRoom.roomPassowrd
+                    password: password ? md5(`_room_${roomId}_${password}`) : password
                 }
-                let user = {
-                    id: this.user.userName.replace(/\d|-/g, ''),
+                /* let user = {
+                    id: `_user_${this.user.userName}`,
                     name: this.user.userName,
-                    avatar: `${parseInt(Math.random() * 10) % 5}.jpg`
-                }
-                this.$socket.emit('create-room', room, user)
+                    avatar: `/static/imgs/avatar/${parseInt(Math.random() * 10) % 5}.jpg`
+                } */
+                this.setCurrentRoomPassword(room.password)
+                this.$socket.emit('create-room', room, this.user)
             }
         },
         handleSubmit (name) {
@@ -171,7 +202,8 @@ export default {
                 if (!valid) {
                     return
                 }
-                if (name === 'formLogin') {
+                switch (name) {
+                case 'formLogin':
                     let userName = this.formLogin.userName
                     if (userName) {
                         this.setUser({
@@ -180,8 +212,24 @@ export default {
                             avatar: `/static/imgs/avatar/${parseInt(Math.random() * 10) % 5}.jpg`
                         })
                     }
-                } else if (name === 'formRoom') {
+                    break
+                case 'formRoom':
                     this._createRoom()
+                    break
+                case 'formPassword':
+                    /* let password = this.formPassword.password
+                    let willJoinedRoom = this.willJoinedRoom
+                    if (willJoinedRoom.password === md5(`${willJoinedRoom.id}_${password}`)) {
+                        this.setCurrentRoomPassword(willJoinedRoom.password)
+                        this.willJoinedRoom = {}
+                        this.passwordModal = false
+                    } */
+                    this.passwordModal = false
+                    this.$router.push(`/room/${this.willJoinedRoom.id}`)
+                    this.willJoinedRoom = {}
+                    break
+                default:
+                    break
                 }
             })
         },
@@ -192,7 +240,8 @@ export default {
             'setTitle': 'SET_TITLE',
             'setUser': 'SET_USER',
             'setUserName': 'SET_USER_NAME',
-            'setRooms': 'SET_ROOMS'
+            'setRooms': 'SET_ROOMS',
+            'setCurrentRoomPassword': 'SET_CURRENT_ROOM_PASSWORD'
         }),
         ...mapActions([
             'setChangedRoom'

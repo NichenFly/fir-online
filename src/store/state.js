@@ -5,5 +5,6 @@ export default {
     },
     rooms: [],
     currentRoom: {
-    }
+    },
+    currentRoomPassword: ''
 }

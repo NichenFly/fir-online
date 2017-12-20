@@ -18,3 +18,4 @@ export const userName = (state) => {
 }
 export const currentRoom = state => state.currentRoom
 export const rooms = state => state.rooms
+export const currentRoomPassword = state => state.currentRoomPassword

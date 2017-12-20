@@ -92,11 +92,12 @@ function getClientIp(req) {
 //     }]
 // }
 
-function emitChangedRoomsInfo(io, room) {
+function emitRoomInfoChanged(io, room) {
     if (room) {
         io.emit('roomInfoChanged', {
             id: room.id,
             name: room.name,
+            password: room.password,
             chessers: room.chessers,
             watchers: room.watchers,
             state: room.state
@@ -109,6 +110,7 @@ function emitRoomsInfo(socket) {
         rooms.push({
             id: room.id,
             name: room.name,
+            password: room.password,
             chessers: room.chessers,
             watchers: room.watchers,
             state: room.state
@@ -138,10 +140,18 @@ io.on('connection', function (socket) {
         roomObj.id = room.id
         roomObj.name = room.name
         roomObj.password = room.password
+        roomObj.chessers.push({
+            id: user.id,
+            userName: user.userName,
+            avatar: user.avatar,
+            chessColor: constants.CHESS_COLOR_BLACK,
+            state: constants.roomState.NOT_START
+        })
         roomObjs[room.id] = roomObj
         roomArrays.push(roomObj)
+        socket.join(room.id)
         socket.emit('roomCreated', room.id)
-        emitChangedRoomsInfo(io, roomObj)
+        emitRoomInfoChanged(io, roomObj)
     })
 
     socket.on('join-room', function (room, user) {
@@ -160,7 +170,8 @@ io.on('connection', function (socket) {
                 socket.emit('chessRole', constants.chessRole.watcher)
             } else {
                 if (chessers.find((c) => c.id === user.id)) {
-                    // 用户已在房间或者下棋者已满
+                    // 用户已在房间
+                    socket.emit('chessRole', constants.chessRole.chesser)
                     return
                 }
 
@@ -180,7 +191,7 @@ io.on('connection', function (socket) {
                 socket.emit('chessRole', constants.chessRole.chesser)
             }
             socket.join(room.id)
-            emitChangedRoomsInfo(io, roomObjs[room.id])
+            emitRoomInfoChanged(io, roomObjs[room.id])
         }
     })
 
@@ -208,7 +219,7 @@ io.on('connection', function (socket) {
                         roomObj.state = constants.roomState.READY
                     }
                 }
-                io.in(roomObj.id).emit('roomStateChanged', roomObj)
+                io.sockets.in(roomObj.id).emit('roomStateChanged', roomObj)
             } else {
                 // 不在该房间
                 socket.emit('roomInfo', null)
@@ -220,7 +231,7 @@ io.on('connection', function (socket) {
         let roomObj = roomObjs[roomId]
         if (roomObj && roomObj.state !== state) {
             roomObj.state = state
-            io.in(roomObj.id).emit('roomStateChanged', roomObj)
+            io.sockets.in(roomObj.id).emit('roomStateChanged', roomObj)
         }
     })
 
@@ -273,7 +284,7 @@ io.on('connection', function (socket) {
             }
         }
         socket.leave(room.id)
-        emitChangedRoomsInfo(io, roomObj)
+        emitRoomInfoChanged(io, roomObj)
     })
     socket.on('disconnect', function (room, user) {
         let roomObj = roomObjs[room.id]
@@ -298,7 +309,7 @@ io.on('connection', function (socket) {
             }
         }
         socket.leave(room.id)
-        emitChangedRoomsInfo(io, roomObj)
+        emitRoomInfoChanged(io, roomObj)
         console.log('a user disconnected')
     })
 })
