@@ -3,38 +3,26 @@ var app = express()
 var http = require('http').Server(app)
 var io = require('socket.io')(http)
 const path = require('path')
-var constants = {
-    CHESS_COLOR_BLACK: true,
-    CHESS_COLOR_WHITE: false,
-    roomState: {
-        NOT_START: 0,
-        READY: 1,
-        RUNNING: 2,
-        END: 3,
-        DESTROYED: 4
-    },
-    chessRole: {
-        chesser: 'chesser',
-        watcher: 'watcher'
-    }
-}
+let constants = require('./src/constants')
+let utils = require('./src/utils')
+let emitActions = require('./src/emit-actions')
 
 app.use('/static', express.static('static'))
 
 app.get('/', function (req, res) {
-    let clientIp = getClientIp(req)
+    let clientIp = utils.getClientIp(req)
     console.log(`${clientIp} 访问系统主页`)
     res.sendFile(path.join(__dirname, '/index.html'))
 })
 
 app.get('/hall', function (req, res) {
-    let clientIp = getClientIp(req)
+    let clientIp = utils.getClientIp(req)
     console.log(`${clientIp} 访问系统大厅`)
     res.sendFile(path.join(__dirname, '/index.html'))
 })
 
 app.get('/room/:id', function (req, res) {
-    let clientIp = getClientIp(req)
+    let clientIp = utils.getClientIp(req)
     console.log(`${clientIp} 进入房间`)
     res.sendFile(path.join(__dirname, '/index.html'))
 })
@@ -54,78 +42,13 @@ let originRoom = {
     chessesIds: {}
 }
 
-function getClientIp(req) {
-    return req.headers['x-forwarded-for'] ||
-        req.connection.remoteAddress ||
-        req.socket.remoteAddress ||
-        req.connection.socket.remoteAddress
-}
-
-// 定义房间对象
-// let roomObj = {
-//     id: '',
-//     name: '',
-//     password: '',
-//     chessers: [{
-//         id: 'xxx',
-//         name: 'xxx',
-//         avatar: '',
-//         chessColor: constants.CHESS_COLOR_BLACK,
-//         state: constants.roomState.NOT_START
-//     }, {
-//         id: 'yyy',
-//         name: 'yyy',
-//         avatar: '',
-//         chessColor: constants.CHESS_COLOR_WHITE,
-//         constants.roomState.NOT_START
-//     }],
-//     watchers: [{
-//         id: '',
-//         name: '',
-//         avatar: ''
-//     }],
-//     state: constants.roomState.NOT_START
-//     chesses: [{
-//         x: 1,
-//         y: 1,
-//         chessColor: constants.CHESS_COLOR_BLACK
-//     }]
-// }
-
-function emitRoomInfoChanged(io, room) {
-    if (room) {
-        io.emit('roomInfoChanged', {
-            id: room.id,
-            name: room.name,
-            password: room.password,
-            chessers: room.chessers,
-            watchers: room.watchers,
-            state: room.state
-        })
-    }
-}
-function emitRoomsInfo(socket) {
-    let rooms = []
-    roomArrays.forEach((room) => {
-        rooms.push({
-            id: room.id,
-            name: room.name,
-            password: room.password,
-            chessers: room.chessers,
-            watchers: room.watchers,
-            state: room.state
-        })
-    })
-    socket.emit('roomsInfo', rooms)
-}
-
 io.on('connection', function (socket) {
     console.log('a user connected')
 
     // 发送信息到该socket
     // emitRoomsInfo(socket)
     socket.on('get-rooms-info', function () {
-        emitRoomsInfo(socket)
+        emitActions.emitRoomsInfo(socket, roomArrays)
     })
 
     socket.on('create-room', function (room, user) {
@@ -151,7 +74,7 @@ io.on('connection', function (socket) {
         roomArrays.push(roomObj)
         socket.join(room.id)
         socket.emit('roomCreated', room.id)
-        emitRoomInfoChanged(io, roomObj)
+        emitActions.emitRoomInfoChanged(io, roomObj)
     })
 
     socket.on('join-room', function (room, user) {
@@ -191,7 +114,7 @@ io.on('connection', function (socket) {
                 socket.emit('chessRole', constants.chessRole.chesser)
             }
             socket.join(room.id)
-            emitRoomInfoChanged(io, roomObjs[room.id])
+            emitActions.emitRoomInfoChanged(io, roomObjs[room.id])
         }
     })
 
@@ -284,7 +207,7 @@ io.on('connection', function (socket) {
             }
         }
         socket.leave(room.id)
-        emitRoomInfoChanged(io, roomObj)
+        emitActions.emitRoomInfoChanged(io, roomObj)
     })
     socket.on('disconnect', function (room, user) {
         let roomObj = roomObjs[room.id]
@@ -309,7 +232,7 @@ io.on('connection', function (socket) {
             }
         }
         socket.leave(room.id)
-        emitRoomInfoChanged(io, roomObj)
+        emitActions.emitRoomInfoChanged(io, roomObj)
         console.log('a user disconnected')
     })
 })
