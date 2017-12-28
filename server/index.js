@@ -27,9 +27,11 @@ app.get('/room/:id', function (req, res) {
     res.sendFile(path.join(__dirname, '/index.html'))
 })
 
-var roomObjs = {}
+let roomObjs = {}
 
-var roomArrays = []
+let roomArrays = []
+
+let SocketUserMap = {}
 
 let originRoom = {
     id: '',
@@ -43,7 +45,7 @@ let originRoom = {
 }
 
 io.on('connection', function (socket) {
-    console.log('a user connected')
+    console.log(`a user(socketId:${socket.id}) connected`)
 
     // 发送信息到该socket
     // emitRoomsInfo(socket)
@@ -73,6 +75,7 @@ io.on('connection', function (socket) {
         roomObjs[room.id] = roomObj
         roomArrays.push(roomObj)
         socket.join(room.id)
+        SocketUserMap[socket.id] = user.id
         socket.emit('roomCreated', room.id)
         emitActions.emitRoomInfoChanged(io, roomObj)
     })
@@ -114,7 +117,9 @@ io.on('connection', function (socket) {
                 socket.emit('chessRole', constants.chessRole.chesser)
             }
             socket.join(room.id)
+            SocketUserMap[socket.id] = user.id
             emitActions.emitRoomInfoChanged(io, roomObjs[room.id])
+            console.log(`user(${user.userName}) join room(${room.name})`)
         }
     })
 
@@ -208,32 +213,35 @@ io.on('connection', function (socket) {
         }
         socket.leave(room.id)
         emitActions.emitRoomInfoChanged(io, roomObj)
+        console.log(`user(${user.userName}) leave room(${room.name})`)
     })
-    socket.on('disconnect', function (room, user) {
-        let roomObj = roomObjs[room.id]
-        if (roomObj) {
-            let chessers = roomObj.chessers
-            let chessser = chessers.find((chesser) => chesser.id === user.id)
-            if (chessser) {
-                roomObj.chessers = chessers.filter((chesser) => chesser.id !== user.id)
-
-                // 房间里没人下棋, 销毁房间
-                if (roomObj.chessers.length === 0) {
-                    roomObj.state = constants.roomState.DESTROYED
-                    delete roomObjs[room.id]
-                    roomArrays = roomArrays.filter((roomTmp) => roomTmp.id === roomObj.id)
-                }
-            } else {
-                let watchers = roomObjs.watchers
-                let watcher = watchers.find((watcher) => watcher.id === user.id)
-                if (watcher) {
-                    roomObj.watchers = watchers.filter((watcher) => watcher.id !== user.id)
+    socket.on('disconnect', function () {
+        let userId = SocketUserMap[socket.id]
+        for (let roomId in roomObjs) {
+            let roomObj = roomObjs[roomId]
+            if (roomObj) {
+                let chessers = roomObj.chessers
+                let chessser = chessers.find((chesser) => chesser.id === userId)
+                if (chessser) {
+                    roomObj.chessers = chessers.filter((chesser) => chesser.id !== userId)
+                    // 房间里没人下棋, 销毁房间
+                    if (roomObj.chessers.length === 0) {
+                        roomObj.state = constants.roomState.DESTROYED
+                        delete roomObjs[roomId]
+                        roomArrays = roomArrays.filter((roomTmp) => roomTmp.id === roomObj.id)
+                    }
+                } else {
+                    let watchers = roomObj.watchers
+                    let watcher = watchers.find((watcher) => watcher.id === userId)
+                    if (watcher) {
+                        roomObj.watchers = watchers.filter((watcher) => watcher.id !== userId)
+                    }
                 }
             }
+            socket.leave(roomId)
+            emitActions.emitRoomInfoChanged(io, roomObj)
         }
-        socket.leave(room.id)
-        emitActions.emitRoomInfoChanged(io, roomObj)
-        console.log('a user disconnected')
+        console.log(`a user(Id:${userId}) disconnected`)
     })
 })
 
