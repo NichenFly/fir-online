@@ -3,28 +3,31 @@ var app = express()
 var http = require('http').Server(app)
 var io = require('socket.io')(http)
 const path = require('path')
-let constants = require('./src/constants')
-let utils = require('./src/utils')
-let emitActions = require('./src/emit-actions')
+let constants = require('./constants')
+let utils = require('./utils')
+let emitActions = require('./emit-actions')
+let config = require('./config')
 
-app.use('/static', express.static('static'))
+let publicPath = path.join(__dirname, '../static')
+console.log(publicPath)
+app.use('/static', express.static(publicPath))
 
 app.get('/', function (req, res) {
     let clientIp = utils.getClientIp(req)
     console.log(`${clientIp} 访问系统主页`)
-    res.sendFile(path.join(__dirname, '/index.html'))
+    res.sendFile(`${publicPath}/index.html`)
 })
 
 app.get('/hall', function (req, res) {
     let clientIp = utils.getClientIp(req)
     console.log(`${clientIp} 访问系统大厅`)
-    res.sendFile(path.join(__dirname, '/index.html'))
+    res.sendFile(`${publicPath}/index.html`)
 })
 
 app.get('/room/:id', function (req, res) {
     let clientIp = utils.getClientIp(req)
     console.log(`${clientIp} 进入房间`)
-    res.sendFile(path.join(__dirname, '/index.html'))
+    res.sendFile(`${publicPath}/index.html`)
 })
 
 let roomObjs = {}
@@ -245,6 +248,6 @@ io.on('connection', function (socket) {
     })
 })
 
-http.listen(3000, function () {
-    console.log('listening on *:3000')
+http.listen(config.port, function () {
+    console.log(`listening on *: ${config.port}`)
 })
