@@ -2,32 +2,18 @@
 
 > 在线五子棋
 
-## 构建步骤
+## 效果预览
 
-### 前端构建
+![Alt 首页](https://raw.githubusercontent.com/NichenFly/fir-online/master/doc/1.png)
 
-``` bash
-# 安装依赖
-npm install
+![Alt 创建房间](https://raw.githubusercontent.com/NichenFly/fir-online/master/doc/2.png)
 
-# 服务器启动地址 localhost:8080
-npm run dev
+![Alt 进入房间](https://raw.githubusercontent.com/NichenFly/fir-online/master/doc/3.png)
 
-# 打包构建
-npm run build
+![Alt 另一个也进入房间](https://raw.githubusercontent.com/NichenFly/fir-online/master/doc/4.png)
 
-# 打包构建并查看详细报告
-npm run build --report
-```
+![Alt 准备后倒计时](https://raw.githubusercontent.com/NichenFly/fir-online/master/doc/5.png)
 
-### 后端构建
-```
-# 安装依赖
-cd server
-npm install
+![Alt 下棋](https://raw.githubusercontent.com/NichenFly/fir-online/master/doc/6.png)
 
-# 启动运行
-node index.js
-```
-
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+![Alt 胜负判断](https://raw.githubusercontent.com/NichenFly/fir-online/master/doc/7.png)
